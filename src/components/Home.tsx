@@ -4,6 +4,7 @@ import '../css/Home.css';
 import logo from '../assets/LogoHome.png'; 
 
 
+
 const Home: React.FC = () => {
   return (
     <div className="home-container">

@@ -1,0 +1,64 @@
+/* FilterSidebar.css */
+/* Filter.css */
+.filter-sidebar {
+  position: absolute;
+  top: 500px; /* altura aproximada do botão Download PDF */
+  right: 20px; /* distância da borda direita */
+  width: 250px;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  z-index: 10;
+}
+
+
+
+.filter-sidebar h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.filter-group {
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-group label {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.filter-group select {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-family: 'Manrope', sans-serif;
+}
+
+
+.apply-filters:hover {
+  background-color: #4275d4;
+}
+
+
+.clear-filters {
+  width: 40%;
+  padding: 8px 0;
+  margin-bottom: 15px;
+  background-color: #e0e0e0;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.clear-filters:hover {
+  background-color: #c0c0c0;
+}

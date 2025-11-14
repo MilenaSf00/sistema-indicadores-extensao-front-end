@@ -1,15 +1,29 @@
 import React from 'react';
 import '../css/Dashboard.css';
-
+import FilterSidebar from '../components/filter';
 
 const Dashboard: React.FC = () => {
+  const barData = [
+    { name: 'Alegrete', value: 39 },
+    { name: 'Bagé', value: 91 },
+    { name: 'Santana do Livramento', value: 38 },
+    { name: 'São Gabriel', value: 30 },
+    { name: 'São Borja', value: 46 },
+    { name: 'Itaqui', value: 51 },
+    { name: 'Uruguaiana', value: 135 },
+    { name: 'Dom Pedrito', value: 66 },
+    { name: 'Caçapava do Sul', value: 27 },
+    { name: 'Jaguarão', value: 35 },
+  ];
+
   return (
     <div className="dashboard-container">
+
+      {/* Cabeçalho */}
       <div className="dashboard-box">
         <div className="dashboard-inner-box">
-          Indicadores da Extensão Universitária
+          INDICADORES DA EXTENSÃO UNIVERSITÁRIA
         </div>
-
         <p className="dashboard-description">
           Acompanhe os dados sobre as ações de extensão realizadas na UNIPAMPA
         </p>
@@ -17,47 +31,76 @@ const Dashboard: React.FC = () => {
 
       <button className="download-pdf">Download PDF</button>
 
+    
+      <FilterSidebar />
+
+      {/* Gráfico de barras horizontal */}
+      <div className="bar-chart-container">
      
-      <div className="chart-container">
-       
-        <div className="chart-header">
-          <h3>Número de ações de extensão</h3>
-           <span className="chart-options">⋯</span> 
+        <div className="bar-chart-legend">
+          
         </div>
 
-        {/* gráfico 1*/}
-        <div className="chart-bars">
-          <div className="chart-bar">
-            <div className="bar-fill" style={{ height: '20%' }}></div>
-            <span>Opção 1</span>
-          </div>
-          <div className="chart-bar">
-            <div className="bar-fill" style={{ height: '20%' }}></div>
-            <span>Opção 2</span>
-          </div>
-        </div>
-
-        {/* ampliar gráfico */}
-        <div className="chart-footer">
-          <span className="chart-expand">⤢</span> 
+  
+        <div className="bar-chart-content">
+          {barData.map((item, index) => (
+            <div className="bar-item" key={index}>
+              <span style={{width: '180px'}}>{item.name}</span>
+              <div className="bar-fill" style={{width: `${item.value * 2}px`}}></div>
+              <span style={{marginLeft: '10px'}}>{item.value}</span>
+            </div>
+          ))}
         </div>
       </div>
-     {/* cards */}
+
+      {/* Cards */}
       <div className="cards-container">
-        {[1, 2, 3].map((num) => (
-          <div className="card" key={num}>
+        {[
+          { number: 0, title: 'N° de Ações de Extensão em Execução' },
+          { number: 0, title: 'N° de Ações de Extensão Executadas' },
+          { number: 0, title: 'N° de Eventos Acadêmicos' }
+        ].map((card, index) => (
+          <div className="card" key={index}>
             <div className="card-border">
               <div className="card-blue">
-                <div className="card-number">1000</div>
-                <div className="card-title">N° de Ações de Extensão em Execução</div>
+                <div className="card-number">{card.number}</div>
+                <div className="card-title">{card.title}</div>
               </div>
             </div>
           </div>
         ))}
       </div>
+
+      {/* Gráfico de pizza */}
+      <div className="pie-chart-container">
+        <h3 className="pie-chart-title">
+          Número de pessoas envolvidas nos projetos de extensão executados (Equipe executora)
+        </h3>
+
+        <div className="pie-chart-content">
+        
+          <div className="pie-chart-legend">
+            <div className="legend-item">
+              <span className="legend-color discente"></span> Discentes
+            </div>
+            <div className="legend-item">
+              <span className="legend-color docentes"></span> Docentes
+            </div>
+            <div className="legend-item">
+              <span className="legend-color taes"></span> TAEs
+            </div>
+            <div className="legend-item">
+              <span className="legend-color externos"></span> Colaboradores Externos
+            </div>
+          </div>
+
+        
+          <div className="pie-chart"></div>
+        </div>
+      </div>
+
     </div>
   );
 };
 
 export default Dashboard;
- 
