@@ -1,0 +1,123 @@
+
+
+body {
+  font-family: 'Manrope', sans-serif;
+}
+
+.home-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; 
+  align-items: center;    
+  min-height: calc(100vh - 60px); 
+  text-align: left;        
+   padding: 80px 20px 20px 20px; 
+  box-sizing: border-box;
+}
+
+/* Imagem */
+.home-logo {
+  width: 400px;
+  height: auto;
+  margin-bottom: 20px;
+}
+
+/* Container do texto */
+.home-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; 
+}
+
+/* Título principal (UNIPAMPA)  */
+.home-title {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 800;
+  font-size: 50px;
+  line-height: 68px;
+  color: #278837; 
+  margin: 0;
+  position: relative;
+  padding-bottom: 10px; 
+}
+
+.home-title::after {
+  content: '';
+  display: block;
+  width: 100%;       
+  height: 5px;       
+  background-color: #FFD700; 
+  margin-top: 5px;
+}
+
+/* Subtítulo (INDICADORES DA EXTENSÃO UNIVERSITÁRIA) */
+.home-subtitle {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 800;
+  font-size: 30px;
+  line-height: 40px;
+  color: #000000; 
+  margin: 0;
+  margin-top: 10px; 
+}
+
+.home-subsubtitle {
+
+  font-family: 'Manrope', sans-serif;
+  font-weight: 800;
+  font-size: 30px;
+  line-height: 40px;
+  color: #585656;
+  margin: 0;
+  margin-top: 10px; 
+}
+
+
+
+/* Botão ACESSAR INDICADORES */
+.home-button {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 32px;
+  width: 476px;    
+  height: 78px;   
+  background-color: #1762a8; 
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.home-button:hover {
+  background-color: #4275d4; 
+}
+
+
+.info-box {
+  background-color: #e0e0e0; 
+  padding: 30px 40px;        
+  margin-top: 40px;           
+  border-radius: 0;           
+  width: 100%;               
+  box-sizing: border-box;     
+}
+
+.info-title {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 800;
+  font-size: 28px;
+  margin: 0 0 15px 0;
+  color: #000000;
+}
+
+.info-text {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 28px;
+  color: #333333;
+  margin: 0;
+}
+

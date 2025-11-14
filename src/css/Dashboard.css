@@ -1,0 +1,189 @@
+/* Container que envolve tudo */
+.dashboard-container {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  margin: 0;
+  padding: 0;     
+  box-sizing: border-box;
+}
+
+/* Retângulo cinza principal ocupa toda a largura */
+.dashboard-box {
+  background-color: #e7e2e2;
+  width: 100vw;      
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  position: relative; 
+  top: 0;             
+  margin-top: 100px
+}
+
+/* Retângulo menor com bordas arredondadas */
+.dashboard-inner-box {
+  background-color: rgb(62, 107, 66);
+  padding: 20px 50px;
+  border-radius: 12px;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 300;
+  font-size: 24px;
+  color: #ffffff;
+  text-align: center;
+  max-width: 600px;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+/* Descrição fora do retângulo menor */
+.dashboard-description {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 28px;
+  color: #2e2c2c;
+  text-align: center;
+  margin: 0;
+}
+
+
+/* Botão Download PDF */
+.download-pdf {
+  margin-top: 20px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  background-color: #1762a8;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.download-pdf:hover {
+  background-color: #4275d4;
+}
+
+/* Container do gráfico */
+.chart-container {
+  background-color: #fff;
+  width: 90%;
+  max-width: 1000px;
+  margin: 40px 0;
+  padding: 20px 30px;
+  border-radius: 12px;
+  position: relative;
+  box-shadow: 0px 2px 10px rgba(0,0,0,0.1);
+}
+
+/* Header do gráfico */
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.chart-header h3 {
+  margin: 0;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.chart-options {
+  cursor: pointer;
+  color: #999;
+}
+
+/* Barras do gráfico */
+.chart-bars {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: 200px; 
+}
+
+.chart-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 18%;
+}
+
+.bar-fill {
+  width: 100%;
+  background-color: #1762a8;
+  border-radius: 4px 4px 0 0;
+  transition: height 0.3s;
+}
+
+.chart-bar span {
+  margin-top: 8px;
+  font-size: 14px;
+  font-family: 'Manrope', sans-serif;
+}
+
+/* Footer com ícone ampliar */
+.chart-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.chart-expand {
+  cursor: pointer;
+  color: #1762a8;
+}
+
+
+.cards-container {
+  display: flex;
+  justify-content: flex-start;
+  margin: 20px 0;
+  flex-wrap: wrap; 
+  gap: 5px;
+}
+
+/* Borda cinza */
+.card-border {
+  border: 6px solid #A2A1A0;
+  border-radius: 66px;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  padding: 10px; 
+  background: transparent;
+}
+
+/* Retângulo azul */
+.card-blue {
+  width: 200px;
+  height: 200px;
+  background: #0C3887;
+  border-radius: 66px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Número dentro do card */
+.card-number {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 800;
+  font-size: 32px;
+  line-height: 44px;
+  color: #ffffff;
+  margin-bottom: 10px;
+}
+
+/* Título do card */
+.card-title {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 800;
+  font-size: 20px;
+  line-height: 27px;
+  color: #ffffff;
+  text-align: center;
+  width: 80%;
+}
