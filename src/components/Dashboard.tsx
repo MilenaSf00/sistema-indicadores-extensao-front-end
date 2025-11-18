@@ -1,6 +1,7 @@
 import React from 'react';
 import '../css/Dashboard.css';
 import FilterSidebar from '../components/filter';
+import Footer from '../components/Footer';
 
 const Dashboard: React.FC = () => {
   const barData = [
@@ -19,7 +20,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="dashboard-container">
 
-      {/* Cabeçalho */}
+
       <div className="dashboard-box">
         <div className="dashboard-inner-box">
           INDICADORES DA EXTENSÃO UNIVERSITÁRIA
@@ -34,7 +35,7 @@ const Dashboard: React.FC = () => {
     
       <FilterSidebar />
 
-      {/* Gráfico de barras horizontal */}
+    
       <div className="bar-chart-container">
      
         <div className="bar-chart-legend">
@@ -53,7 +54,6 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Cards */}
       <div className="cards-container">
         {[
           { number: 0, title: 'N° de Ações de Extensão em Execução' },
@@ -71,7 +71,7 @@ const Dashboard: React.FC = () => {
         ))}
       </div>
 
-      {/* Gráfico de pizza */}
+   
       <div className="pie-chart-container">
         <h3 className="pie-chart-title">
           Número de pessoas envolvidas nos projetos de extensão executados (Equipe executora)
@@ -98,7 +98,7 @@ const Dashboard: React.FC = () => {
           <div className="pie-chart"></div>
         </div>
       </div>
-
+         <Footer />
     </div>
   );
 };

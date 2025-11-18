@@ -1,9 +1,8 @@
-/* FilterSidebar.css */
-/* Filter.css */
+
 .filter-sidebar {
   position: absolute;
-  top: 500px; /* altura aproximada do botão Download PDF */
-  right: 20px; /* distância da borda direita */
+  top: 500px; 
+  right: 20px; 
   width: 250px;
   background: #fff;
   padding: 20px;

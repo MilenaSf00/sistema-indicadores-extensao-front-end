@@ -26,6 +26,9 @@ const Navbar: React.FC = () => {
         <li>
           <Link to="/ajuda">Ajuda</Link>
         </li>
+        <li>
+         <Link to="/upload">Upload</Link>
+        </li>
       </ul>
     </nav>
   );

@@ -1,0 +1,104 @@
+/* Container geral */
+.sobre-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Caixa branca */
+.sobre-box {
+  width: 1842px;
+  height: 400px;
+  background: #ffffff;
+  border-radius: 66px;
+  box-shadow: 0 4px 4px rgba(0,0,0,0.25);
+  position: relative;
+  margin-top: 80px;
+}
+
+
+.sobre-inner-box {
+  width: 1058px;
+  height: 120px;
+  background: #248C4F;
+  border-radius: 40px 0px;
+  position: absolute;
+
+  
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-family: 'Manrope';
+  font-size: 60px;
+  font-weight: 800;
+  color: white;
+}
+
+
+
+.sobre-description {
+  margin-top: 290px;
+  width: 100%;
+  
+  display: flex;
+  justify-content: center;
+  
+  font-family: 'Manrope';
+  font-size: 24px;
+  font-weight: 600;
+  color: #1C1B1F;
+
+  white-space: nowrap; 
+}
+
+
+/* Layout esquerda / direita */
+.sobre-content-row {
+  width: 1842px;
+  margin-top: 50px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+/* Coluna esquerda */
+.sobre-left {
+  width: 40%;
+  display: flex;
+  justify-content: center;
+}
+
+/* Logo */
+.sobre-logo {
+  width: 320px;
+  height: auto;
+}
+
+/* Coluna direita */
+.sobre-right {
+  width: 50%;
+  padding-right: 120px;
+}
+
+.sobre-section-title {
+  font-family: 'Manrope';
+  font-weight: 800;
+  font-size: 32px;
+  color: #248C4F;
+  margin-bottom: 20px;
+}
+
+.sobre-paragraph {
+  font-family: 'Manrope';
+  font-weight: 500;
+  font-size: 26px;
+  color: #1C1B1F;
+  line-height: 160%;
+}
