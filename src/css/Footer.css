@@ -7,18 +7,44 @@ body {
   width: 100%;
   background: #1C1B1F;
   box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-  border-radius: 24px 24px 0 0;
+  border-radius: 20px 20px 0 0;
   padding: 40px 20px;
   box-sizing: border-box;
   margin-top: 40px;
 }
 
-.footer-content {
+.footer-title{
+  margin-left: 50px;
+  margin-top: -20px;
+  margin-bottom: 20px;
   font-family: 'Manrope', sans-serif;
-  font-weight: 400;
-  font-size: 15px;
+  font-weight: 800;
+  font-size: 20px;
   line-height: 30px;
   color: #FFF1F1;
-  text-align: center;
+  left: 100px;
+  white-space: pre-line; 
+}
+
+.footer-content{
+  margin-left: 50px;
+  margin-top: 0px;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 10px;
+  color: #FFF1F1;
+  left: 100px;
+  white-space: pre-line; 
+}
+
+.copyright{
+  margin-left: 50px;
+  margin-bottom: -10px;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 400;
+  font-size: 20px;
+  color: #FFF1F1;
+  left: 100px;
   white-space: pre-line; 
 }
