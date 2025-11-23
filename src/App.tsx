@@ -1,5 +1,4 @@
-// src/App.jsx
-import React from 'react';
+import './App.css';
 import Home from '../src/components/Home';
 import Upload from '../src/components/Upload';
 import Navbar from '../src/components/Navbar';
@@ -14,7 +13,7 @@ function App() {
   return (
     <Router>
       <Navbar />
-      
+
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/upload" element={<Upload />} />

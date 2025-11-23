@@ -1,24 +1,50 @@
-
 .filter-sidebar {
-  position: absolute;
-  top: 500px; 
-  right: 20px; 
-  width: 250px;
+  width: 100%;
   background: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  z-index: 10;
+  padding: 0;
 }
 
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #E74B23;
+  padding-bottom: 10px;
+}
 
-
-.filter-sidebar h3 {
-  margin-top: 0;
-  margin-bottom: 15px;
+.filter-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-family: 'Manrope', sans-serif;
-  font-weight: 700;
+  font-weight: 800;
   font-size: 20px;
+  color: #333;
+  text-transform: uppercase;
+}
+
+.filter-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.clear-filters-btn {
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  text-transform: uppercase;
+}
+
+.clear-filters-btn:hover {
+  background-color: #e0e0e0;
 }
 
 .filter-group {
@@ -29,35 +55,30 @@
 
 .filter-group label {
   font-family: 'Manrope', sans-serif;
-  font-weight: 600;
-  font-size: 16px;
+  font-weight: 700;
+  font-size: 12px;
   margin-bottom: 5px;
+  text-transform: uppercase;
+  color: #333;
 }
 
 .filter-group select {
-  padding: 8px;
-  border-radius: 6px;
+  padding: 10px;
+  border-radius: 8px;
   border: 1px solid #ccc;
   font-family: 'Manrope', sans-serif;
-}
-
-
-.apply-filters:hover {
-  background-color: #4275d4;
-}
-
-
-.clear-filters {
-  width: 40%;
-  padding: 8px 0;
-  margin-bottom: 15px;
-  background-color: #e0e0e0;
-  border: none;
-  border-radius: 6px;
-  font-weight: 600;
+  font-size: 14px;
+  color: #555;
+  background-color: #fff;
   cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right .7em top 50%;
+  background-size: .65em auto;
 }
 
-.clear-filters:hover {
-  background-color: #c0c0c0;
+.filter-group select:focus {
+  outline: none;
+  border-color: #1762a8;
 }
