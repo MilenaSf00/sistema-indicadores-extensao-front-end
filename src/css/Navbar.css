@@ -8,14 +8,14 @@
   justify-content: space-between;
   padding: 0 20px;
   box-sizing: border-box;
-  position: fixed; 
+  position: fixed;
   top: 0;
   left: 0;
   z-index: 1000;
 }
 
 .navbar-logo {
-  height: 50px; 
+  height: 50px;
 }
 
 .navbar-links {
@@ -36,5 +36,23 @@
 }
 
 .navbar-links li a:hover {
+  color: #646cff;
+}
+
+/* Auth button styling */
+.navbar-auth-button {
+  color: rgb(0, 0, 0);
+  background: none;
+  border: none;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  cursor: pointer;
+  transition: color 0.2s;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.navbar-auth-button:hover {
   color: #646cff;
 }

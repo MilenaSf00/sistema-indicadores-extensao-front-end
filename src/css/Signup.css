@@ -1,0 +1,181 @@
+body {
+    font-family: 'Manrope', sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 0;
+}
+
+/* Container geral da página */
+.signup-page-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding-top: 50px;
+}
+
+
+.signup-header-wrapper {
+    position: relative;
+    width: 1058px;
+    max-width: 90%;
+    height: 236px;
+    margin-bottom: 40px;
+}
+
+/* Retângulo branco atrás */
+.signup-header-background {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: #FFFFFF;
+    border-radius: 20px;
+    z-index: 0;
+}
+
+/* Retângulo verde sobreposto */
+.signup-header-green {
+    position: absolute;
+    width: 1058px;
+    height: 236px;
+    left: 0;
+    top: 0;
+    background-color: #248C4F;
+    border-radius: 40px 0 0 0;
+    z-index: 1;
+}
+
+/* Texto CADASTRO */
+.signup-header-text {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    font-family: 'Maven Pro', sans-serif;
+    font-weight: 900;
+    font-size: 48px;
+    line-height: 75px;
+    color: #FFFFFF;
+    top: 40%;
+    z-index: 2;
+}
+
+/* Subtitle */
+.signup-subtitle {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 500;
+    font-size: 20px;
+    color: #248C4F;
+    top: 65%;
+    z-index: 0;
+}
+
+/* Ícone seguro */
+.signup-icon {
+    width: 96px;
+    height: 96px;
+    background-color: #000;
+    border-radius: 50%;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.signup-icon::before {
+    content: '👤';
+    font-size: 48px;
+    color: white;
+}
+
+/* Card de signup */
+.signup-card {
+    width: 400px;
+    max-width: 90%;
+    background: #ffffff;
+    padding: 50px 40px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 4px 2px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Títulos dos inputs */
+.signup-title {
+    width: 100%;
+    font-weight: 500;
+    font-size: 25px;
+    margin-bottom: 10px;
+    color: #000000;
+    text-align: left;
+}
+
+/* Inputs */
+.signup-input {
+    width: 100%;
+    height: 64px;
+    padding: 0 15px;
+    margin-bottom: 20px;
+    font-size: 20px;
+    border: 1px solid #000;
+    border-radius: 10px;
+    box-shadow: 0px 4px 4px 4px rgba(0, 0, 0, 0.25);
+    outline: none;
+}
+
+/* Botão de signup */
+.signup-button {
+    width: 100%;
+    height: 72px;
+    background-color: #D84315;
+    color: #fff;
+    font-size: 25px;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0px 4px 4px 4px rgba(0, 0, 0, 0.25);
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+}
+
+.signup-button:hover {
+    background-color: #BF360C;
+}
+
+.signup-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Error message */
+.error-message {
+    width: 100%;
+    color: #D32F2F;
+    font-size: 18px;
+    font-weight: 500;
+    margin: 10px 0;
+    text-align: center;
+}
+
+/* Login link */
+.login-link {
+    margin-top: 20px;
+    font-size: 18px;
+    color: #333;
+    text-align: center;
+}
+
+.login-link a {
+    color: #155BD8;
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+.login-link a:hover {
+    color: #4275d4;
+}
