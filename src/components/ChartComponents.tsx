@@ -1,5 +1,5 @@
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, PieChart, Pie, Tooltip, LabelList } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, LabelList } from 'recharts';
 
 // tipos
 export interface ChartData {
@@ -9,7 +9,9 @@ export interface ChartData {
     [key: string]: string | number | undefined;
 }
 
-// grafico de barros
+// -----------------------
+// CustomBarChart
+// -----------------------
 interface CustomBarChartProps {
     data: ChartData[];
     height?: number;
@@ -18,7 +20,7 @@ interface CustomBarChartProps {
 
 export const CustomBarChart: React.FC<CustomBarChartProps> = ({ data, height = 400, barColor = "#1762a8" }) => {
     return (
-        <div style={{ width: '100%', height: height }}>
+        <div style={{ width: '100%', height, minHeight: 150 }}>
             <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                     layout="vertical"
@@ -51,29 +53,31 @@ export const CustomBarChart: React.FC<CustomBarChartProps> = ({ data, height = 4
     );
 };
 
-// grafico de pizza
+// -----------------------
+// CustomPieChart
+// -----------------------
 interface CustomPieChartProps {
     data: ChartData[];
-    size?: number;
+    size?: number; // tamanho máximo do gráfico
 }
 
 export const CustomPieChart: React.FC<CustomPieChartProps> = ({ data, size = 300 }) => {
     return (
-        <div style={{ width: size, height: size, display: 'flex', justifyContent: 'center' }}>
-            <ResponsiveContainer width="100%" height="100%">
+        <div style={{ width: '100%', maxWidth: size, height: size, minWidth: 150, minHeight: 150, display: 'flex', justifyContent: 'center' }}>
+            <ResponsiveContainer width="100%" aspect={1}>
                 <PieChart>
                     <Pie
                         data={data}
                         cx="50%"
                         cy="50%"
                         innerRadius={0}
-                        outerRadius={size / 2 - 10}
+                        outerRadius="80%"
                         fill="#8884d8"
                         paddingAngle={0}
                         dataKey="value"
                     >
                         {data.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} stroke="white" strokeWidth={2} />
+                            <Cell key={`cell-${index}`} fill={entry.color || '#8884d8'} stroke="white" strokeWidth={2} />
                         ))}
                     </Pie>
                     <Tooltip />
@@ -83,7 +87,9 @@ export const CustomPieChart: React.FC<CustomPieChartProps> = ({ data, size = 300
     );
 };
 
-// grafico semi circurlo
+// -----------------------
+// SemiCircleChart
+// -----------------------
 interface SemiCircleChartProps {
     percentage: number;
     label: string;
@@ -98,17 +104,17 @@ export const SemiCircleChart: React.FC<SemiCircleChartProps> = ({ percentage, la
     ];
 
     return (
-        <div style={{ position: 'relative', width: size, height: size / 2 + 20, display: 'flex', justifyContent: 'center' }}>
-            <ResponsiveContainer width={size} height={size}>
+        <div style={{ position: 'relative', width: '100%', maxWidth: size, minWidth: 150, minHeight: 100, height: size / 2 + 20, display: 'flex', justifyContent: 'center' }}>
+            <ResponsiveContainer width="100%" aspect={2}>
                 <PieChart>
                     <Pie
                         data={data}
                         cx="50%"
-                        cy="50%"
+                        cy="100%"
                         startAngle={180}
                         endAngle={0}
-                        innerRadius={size / 2 - 20}
-                        outerRadius={size / 2}
+                        innerRadius="70%"
+                        outerRadius="100%"
                         paddingAngle={0}
                         dataKey="value"
                         stroke="none"
@@ -119,16 +125,8 @@ export const SemiCircleChart: React.FC<SemiCircleChartProps> = ({ percentage, la
                     </Pie>
                 </PieChart>
             </ResponsiveContainer>
-            <div style={{
-                position: 'absolute',
-                bottom: '10px',
-                left: 0,
-                right: 0,
-                textAlign: 'center',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center'
-            }}>
+
+            <div style={{ position: 'absolute', bottom: '10px', left: 0, right: 0, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <div style={{ fontSize: '24px', fontWeight: '800', color: '#333', fontFamily: 'Manrope' }}>
                     {percentage.toLocaleString('pt-BR')}%
                 </div>
@@ -138,7 +136,9 @@ export const SemiCircleChart: React.FC<SemiCircleChartProps> = ({ percentage, la
     );
 };
 
-// cards
+// -----------------------
+// StatCard
+// -----------------------
 interface StatCardProps {
     value: number | string;
     title: string;
@@ -162,7 +162,7 @@ export const StatCard: React.FC<StatCardProps> = ({ value, title, color = '#155B
             minWidth: '140px',
             minHeight: '140px',
             boxShadow: '0 6px 15px rgba(0,0,0,0.15)',
-            border: '5px solid white',
+            border: `5px solid white`,
             outline: `5px solid ${borderColor}`,
             boxSizing: 'border-box',
             margin: '5px',

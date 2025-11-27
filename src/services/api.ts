@@ -1,92 +1,84 @@
 import axios from 'axios';
+import type { ChartData } from '../components/ChartComponents';
+
+const API_URL = 'http://127.0.0.1:8000';
 
 
-const API_BASE_URL = 'http://127.0.0.1:8000';
-
-const apiClient = axios.create({
-    baseURL: API_BASE_URL,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-});
+export const signup = async (username: string, password: string) => {
+    const response = await axios.post(`${API_URL}/register`, { username, password });
+    return response.data;
+};
 
 
-apiClient.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem('access_token');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+export const login = async (username: string, password: string) => {
+    const formData = new FormData();
+    formData.append('username', username);
+    formData.append('password', password);
+
+    const response = await axios.post(`${API_URL}/login`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+};
+
+
+
+
+// Função para enviar arquivo CSV
+export const uploadProjects = async (file: File): Promise<ChartData[]> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await axios.post<ChartData[]>(
+        `${API_URL}/upload-projects`,
+        formData,
+        {
+            headers: { 'Content-Type': 'multipart/form-data' },
         }
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
-    }
-);
+    );
 
-export interface LoginRequest {
-    username: string;
-    password: string;
-}
+    return response.data;
+};
 
-export interface LoginResponse {
-    access_token: string;
-    token_type: string;
-}
-
-export interface SignupRequest {
-    username: string;
-    password: string;
-}
-
-export interface SignupResponse {
-    id?: number;
-    username: string;
-    message?: string;
-}
-
-/**
- * Login user 
-
- */
-export const login = async (username: string, password: string): Promise<LoginResponse> => {
-    try {
-        const formData = new URLSearchParams();
-        formData.append('username', username);
-        formData.append('password', password);
-
-        const response = await apiClient.post<LoginResponse>(
-            '/login',
-            formData,
-            { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
-        );
-
-        return response.data;
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            throw new Error(error.response?.data?.detail || 'Erro ao fazer login');
-        }
-        throw new Error('Erro ao fazer login');
-    }
+// Função para pegar o indicador
+export const getActionsByCampus = async (): Promise<ChartData[]> => {
+    const response = await axios.get<ChartData[]>(`${API_URL}/indicators/actions-by-campus`);
+    return response.data;
 };
 
 /**
- * Registro de novo user
+ * autenticacao  JWT tokens
  */
-export const signup = async (username: string, password: string): Promise<SignupResponse> => {
-    try {
-        const response = await apiClient.post<SignupResponse>('/register', {
-            username,
-            password,
-        });
 
-        return response.data;
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            throw new Error(error.response?.data?.detail || 'Erro ao criar conta');
-        }
-        throw new Error('Erro ao criar conta');
-    }
+const TOKEN_KEY = 'access_token';
+
+/**
+ * Salva JWT token no localStorage
+ */
+export const saveToken = (token: string): void => {
+    localStorage.setItem(TOKEN_KEY, token);
 };
 
-export default apiClient;
+/**
+ * Pega JWT token do localStorage
+ */
+export const getToken = (): string | null => {
+    return localStorage.getItem(TOKEN_KEY);
+};
+
+/**
+ * Remove JWT token do localStorage
+ */
+export const removeToken = (): void => {
+    localStorage.removeItem(TOKEN_KEY);
+};
+
+/**
+ * Verifica se o usuario esta autenticado
+ */
+export const isAuthenticated = (): boolean => {
+    const token = getToken();
+    return token !== null && token !== '';
+};
+
+

@@ -1,61 +1,83 @@
 import React, { useState } from 'react';
+import '../css/Upload.css';
+import { uploadProjects } from '../services/api';
 
 const Upload: React.FC = () => {
-  const [fileData, setFileData] = useState<string[][] | null>(null);
-  const [fileName, setFileName] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+    const selectedFile = event.target.files?.[0];
+    if (!selectedFile) return;
+
+    if (!selectedFile.name.endsWith('.csv')) {
+      setMessage({ type: 'error', text: 'Por favor, selecione um arquivo CSV.' });
+      setFile(null);
+      return;
+    }
+
+    setFile(selectedFile);
+    setMessage(null);
+  };
+
+  const handleUpload = async () => {
     if (!file) return;
 
-    setFileName(file.name);
+    setIsLoading(true);
+    setMessage(null);
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const text = e.target?.result as string;
-   
-      const rows = text
-        .split('\n')
-        .map(row => row.split(',').slice(0, 3)); 
-      setFileData(rows);
-    };
-    reader.readAsText(file);
+    try {
+      await uploadProjects(file);
+      setMessage({ type: 'success', text: 'Arquivo enviado com sucesso!' });
+      setFile(null);
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error.response?.data?.detail || error.message || 'Erro ao enviar arquivo.' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>Upload CSV</h2>
-      <p>Aqui você pode enviar seus arquivos CSV.</p>
+    <div className="upload-container">
+      <div className="upload-card">
+        <h2 className="upload-title">Upload de Projetos</h2>
+        <p className="upload-description">
+          Envie o arquivo CSV com os dados dos projetos de extensão. O backend vai normalizar automaticamente os cabeçalhos.
+        </p>
 
-      <input type="file" accept=".csv" onChange={handleFileChange} />
-
-      {fileName && <p><strong>Arquivo selecionado:</strong> {fileName}</p>}
-
-      {fileData && (
-        <div style={{ marginTop: '20px' }}>
-          <h3>Conteúdo do CSV (3 primeiras colunas):</h3>
-          <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-            <tbody>
-              {fileData.map((row, i) => (
-                <tr key={i}>
-                  {row.map((cell, j) => (
-                    <td
-                      key={j}
-                      style={{
-                        border: '1px solid #ccc',
-                        padding: '5px',
-                        textAlign: 'left',
-                      }}
-                    >
-                      {cell}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="info-box">
+          <span className="info-icon">ℹ️</span>
+          <div>
+            <strong>Formato Obrigatório:</strong> CSV. Não é necessário se preocupar com o nome exato das colunas.
+          </div>
         </div>
-      )}
+
+        <div className="file-drop-area">
+          <input
+            type="file"
+            className="file-input"
+            accept=".csv"
+            onChange={handleFileChange}
+          />
+          <span className="upload-icon">📁</span>
+          <p>{file ? file.name : 'Arraste e solte ou clique para selecionar um arquivo CSV'}</p>
+        </div>
+
+        <button
+          className="upload-button"
+          onClick={handleUpload}
+          disabled={!file || isLoading}
+        >
+          {isLoading ? 'Enviando...' : 'Enviar Arquivo'}
+        </button>
+
+        {message && (
+          <div className={`message ${message.type}`}>
+            {message.text}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

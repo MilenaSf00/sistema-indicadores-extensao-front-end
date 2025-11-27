@@ -27,7 +27,7 @@ const Sobre: React.FC = () => {
     },
     {
       name: "Aline de Mello",
-      role: "Tutora",
+      role: "Orientadora",
       desc1: "Docente",
       desc2: "Orientadora do Projeto",
       image: foto3

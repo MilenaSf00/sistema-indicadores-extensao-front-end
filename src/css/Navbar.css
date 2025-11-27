@@ -1,12 +1,15 @@
 .navbar {
   width: 100%;
-  height: 60px;
-  background-color: #fdfdfd;
-  box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.400);
+  height: 70px;
+  /* Slightly taller for better spacing */
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  /* Softer shadow */
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
+  padding: 0 40px;
+  /* More horizontal padding */
   box-sizing: border-box;
   position: fixed;
   top: 0;
@@ -15,44 +18,80 @@
 }
 
 .navbar-logo {
-  height: 50px;
+  height: 45px;
+  /* Adjusted logo size */
 }
 
 .navbar-links {
   list-style: none;
   display: flex;
-  gap: 25px;
+  gap: 30px;
+  /* Increased gap */
   margin: 0;
   padding: 0;
+  align-items: center;
+}
+
+.navbar-links li {
+  display: flex;
+  align-items: center;
 }
 
 .navbar-links li a {
-  color: rgb(0, 0, 0);
+  color: #333333;
+  /* Dark text */
   text-decoration: none;
   font-family: 'Manrope', sans-serif;
   font-weight: 500;
   font-size: 16px;
-  transition: color 0.2s;
+  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* Space between icon and text */
 }
 
 .navbar-links li a:hover {
-  color: #646cff;
+  color: #E74B23;
+  /* Project Orange */
 }
 
-/* Auth button styling */
+/* Icon styling */
+.nav-icon {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  /* Inherit color from parent (text) */
+}
+
+/* Auth button styling (Login/Logout) */
 .navbar-auth-button {
-  color: rgb(0, 0, 0);
-  background: none;
+  background-color: #E74B23;
+  /* Project Orange */
+  color: white !important;
+  /* Force white text */
   border: none;
   font-family: 'Manrope', sans-serif;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 16px;
   cursor: pointer;
-  transition: color 0.2s;
+  padding: 8px 24px;
+  /* Pill shape padding */
+  border-radius: 50px;
+  /* Pill shape radius */
+  transition: all 0.2s ease;
   text-decoration: none;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(231, 75, 35, 0.3);
+  /* Orange shadow */
 }
 
 .navbar-auth-button:hover {
-  color: #646cff;
+  background-color: #D1401D;
+  /* Darker orange */
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(231, 75, 35, 0.4);
+  color: white;
 }
