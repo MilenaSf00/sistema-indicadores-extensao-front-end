@@ -39,7 +39,7 @@ interface DashboardData {
 }
 
 // conectar
-const API_URL = "http://localhost:3000/api";
+//const API_URL = "http://localhost:3000/api";
 
 const Dashboard: React.FC = () => {
   const [data, setData] = useState<DashboardData | null>(null);
