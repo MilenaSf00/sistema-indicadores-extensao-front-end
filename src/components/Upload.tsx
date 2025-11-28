@@ -2,83 +2,113 @@ import React, { useState } from 'react';
 import '../css/Upload.css';
 import { uploadProjects } from '../services/api';
 
+interface UploadMessage {
+  type: 'success' | 'error';
+  text: string;
+}
+
+interface FileResult {
+  file: string;
+  inserted: number;
+  errors?: string[];
+}
+
 const Upload: React.FC = () => {
-  const [file, setFile] = useState<File | null>(null);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const [message, setMessage] = useState<UploadMessage | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [fileResults, setFileResults] = useState<FileResult[]>([]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = event.target.files?.[0];
-    if (!selectedFile) return;
+    const selectedFiles = event.target.files;
+    if (!selectedFiles) return;
 
-    if (!selectedFile.name.endsWith('.csv')) {
-      setMessage({ type: 'error', text: 'Por favor, selecione um arquivo CSV.' });
-      setFile(null);
+
+    const fileList = Array.from(selectedFiles);
+    const invalidFiles = fileList.filter(file => !file.name.endsWith('.csv'));
+
+    if (invalidFiles.length > 0) {
+      setMessage({ type: 'error', text: 'Por favor, selecione apenas arquivos CSV.' });
+      setFiles([]);
       return;
     }
 
-    setFile(selectedFile);
+    setFiles(fileList);
     setMessage(null);
+
+
   };
 
   const handleUpload = async () => {
-    if (!file) return;
+    if (files.length === 0) return;
+
 
     setIsLoading(true);
     setMessage(null);
+    setFileResults([]);
 
     try {
-      await uploadProjects(file);
-      setMessage({ type: 'success', text: 'Arquivo enviado com sucesso!' });
-      setFile(null);
+      const result = await uploadProjects(files);
+      // Atualiza relatório resumido
+      setMessage({
+        type: 'success',
+        text: `Upload concluído! Arquivos processados: ${result.processedFiles || files.length}. Inseridos: ${result.inserted || 0}, Erros: ${result.errors?.length || 0}`
+      });
+
+      // Salva resultados detalhados
+      setFileResults(result.fileResults || []);
+      setFiles([]);
     } catch (error: any) {
-      setMessage({ type: 'error', text: error.response?.data?.detail || error.message || 'Erro ao enviar arquivo.' });
+      setMessage({ type: 'error', text: error.response?.data?.detail || error.message || 'Erro ao enviar arquivos.' });
     } finally {
       setIsLoading(false);
     }
+
+
   };
 
-  return (
-    <div className="upload-container">
-      <div className="upload-card">
-        <h2 className="upload-title">Upload de Projetos</h2>
-        <p className="upload-description">
-          Envie o arquivo CSV com os dados dos projetos de extensão. O backend vai normalizar automaticamente os cabeçalhos.
-        </p>
+  return (<div className="upload-container"> <div className="upload-card"> <h2 className="upload-title">Upload de Projetos</h2> <p className="upload-description">
+    Envie os arquivos CSV com os dados dos projetos de extensão. O backend vai normalizar automaticamente os cabeçalhos. </p>
 
-        <div className="info-box">
-          <span className="info-icon">ℹ️</span>
-          <div>
-            <strong>Formato Obrigatório:</strong> CSV. Não é necessário se preocupar com o nome exato das colunas.
+
+    <input
+      type="file"
+      accept=".csv"
+      multiple
+      onChange={handleFileChange}
+    />
+
+    {files.length > 0 && (
+      <ul>
+        {files.map((f, idx) => <li key={idx}>{f.name}</li>)}
+      </ul>
+    )}
+
+    <button onClick={handleUpload} disabled={files.length === 0 || isLoading}>
+      {isLoading ? 'Enviando...' : 'Enviar Arquivos'}
+    </button>
+
+    {message && <div className={`message ${message.type}`}>{message.text}</div>}
+
+    {fileResults.length > 0 && (
+      <div className="file-results">
+        <h3>Relatório detalhado:</h3>
+        {fileResults.map((res, idx) => (
+          <div key={idx} style={{ marginBottom: '10px', border: '1px solid #ccc', padding: '5px' }}>
+            <strong>{res.file}</strong> - Inseridos: {res.inserted}
+            {res.errors && res.errors.length > 0 && (
+              <ul>
+                {res.errors.map((e, i) => <li key={i} style={{ color: 'red' }}>{e}</li>)}
+              </ul>
+            )}
           </div>
-        </div>
-
-        <div className="file-drop-area">
-          <input
-            type="file"
-            className="file-input"
-            accept=".csv"
-            onChange={handleFileChange}
-          />
-          <span className="upload-icon">📁</span>
-          <p>{file ? file.name : 'Arraste e solte ou clique para selecionar um arquivo CSV'}</p>
-        </div>
-
-        <button
-          className="upload-button"
-          onClick={handleUpload}
-          disabled={!file || isLoading}
-        >
-          {isLoading ? 'Enviando...' : 'Enviar Arquivo'}
-        </button>
-
-        {message && (
-          <div className={`message ${message.type}`}>
-            {message.text}
-          </div>
-        )}
+        ))}
       </div>
-    </div>
+    )}
+  </div>
+  </div>
+
+
   );
 };
 

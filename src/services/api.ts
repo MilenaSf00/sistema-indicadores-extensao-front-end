@@ -1,5 +1,4 @@
 import axios from 'axios';
-import type { ChartData } from '../components/ChartComponents';
 
 const API_URL = 'http://127.0.0.1:8000';
 
@@ -25,12 +24,15 @@ export const login = async (username: string, password: string) => {
 
 
 // Função para enviar arquivo CSV
-export const uploadProjects = async (file: File): Promise<ChartData[]> => {
+// Função para enviar arquivos CSV
+export const uploadProjects = async (files: File[]): Promise<any> => {
     const formData = new FormData();
-    formData.append('file', file);
+    files.forEach((file) => {
+        formData.append('files', file);
+    });
 
-    const response = await axios.post<ChartData[]>(
-        `${API_URL}/upload-projects`,
+    const response = await axios.post(
+        `${API_URL}/upload-data`,
         formData,
         {
             headers: { 'Content-Type': 'multipart/form-data' },
@@ -40,9 +42,22 @@ export const uploadProjects = async (file: File): Promise<ChartData[]> => {
     return response.data;
 };
 
-// Função para pegar o indicador
-export const getActionsByCampus = async (): Promise<ChartData[]> => {
-    const response = await axios.get<ChartData[]>(`${API_URL}/indicators/actions-by-campus`);
+export interface AcaoPorCampus {
+    campus: string;
+    quantidade: number;
+}
+
+export interface IndicatorsResponse {
+    acoes_por_campus: AcaoPorCampus[];
+    eventos_academicos: number;
+    acoes_em_execucao: number;
+    acoes_executadas: number;
+    [key: string]: any;
+}
+
+// Função para pegar todos os indicadores
+export const getIndicators = async (): Promise<IndicatorsResponse> => {
+    const response = await axios.get(`${API_URL}/indicators`);
     return response.data;
 };
 

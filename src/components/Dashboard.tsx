@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '../css/Dashboard.css';
 import FilterSidebar from '../components/filter';
 import Footer from '../components/Footer';
+import { getIndicators } from '../services/api';
 import { CustomBarChart, CustomPieChart, SemiCircleChart, StatCard } from './ChartComponents';
 import type { ChartData } from './ChartComponents';
 
@@ -39,7 +40,7 @@ interface DashboardData {
 }
 
 // conectar
-//const API_URL = "http://localhost:3000/api";
+const API_URL = "http://localhost:3000/api";
 
 const Dashboard: React.FC = () => {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -54,71 +55,74 @@ const Dashboard: React.FC = () => {
     const fetchData = async () => {
       console.log("Fetching data with filters:", filters);
 
-      // dado estatico por enquanto
-      const mockData: DashboardData = {
-        acoesPorCidade: [
-          { name: 'Alegrete', value: 39, color: '#2E7D32' },
-          { name: 'Bagé', value: 91, color: '#1565C0' },
-          { name: 'Santana do Livramento', value: 38, color: '#424242' },
-          { name: 'São Gabriel', value: 30, color: '#1565C0' },
-          { name: 'São Borja', value: 46, color: '#FBC02D' },
-          { name: 'Itaqui', value: 51, color: '#E64A19' },
-          { name: 'Uruguaiana', value: 135, color: '#1565C0' },
-          { name: 'Dom Pedrito', value: 66, color: '#283593' },
-          { name: 'Caçapava do Sul', value: 27, color: '#F06292' },
-          { name: 'Jaguarão', value: 35, color: '#283593' },
-        ],
-        acoesExecucao: 1000,
-        acoesExecutadas: 800,
-        eventosAcademicos: 61,
-        pessoasEnvolvidas: [
-          { name: 'Discentes', value: 350, color: '#FFC107' },
-          { name: 'Docentes', value: 150, color: '#1565C0' },
-          { name: 'TAEs', value: 80, color: '#E64A19' },
-          { name: 'Colaboradores Externos', value: 120, color: '#F4511E' },
-        ],
-        totalPessoas: 273,
-        totalEnvolvidos: 300,
-        acoesPorModalidade: [
-          { name: 'Projeto', value: 636, color: '#278837' },
-          { name: 'Curso', value: 115, color: '#2E3192' },
-          { name: 'Evento', value: 461, color: '#444' },
-          { name: 'Prestação de Serviço', value: 8, color: '#2E3192' },
-          { name: 'Programa', value: 67, color: '#FFC107' },
-        ],
-        acoesPorArea: [
-          { name: 'Educação', value: 354, color: '#278837' },
-          { name: 'Saúde', value: 133, color: '#2E3192' },
-          { name: 'Cultura', value: 159, color: '#444' },
-          { name: 'Meio Ambiente', value: 90, color: '#2E3192' },
-          { name: 'Direitos Humanos e Justiça', value: 56, color: '#FFC107' },
-          { name: 'Comunicação', value: 62, color: '#E74B23' },
-          { name: 'Tecnologia e Produção', value: 88, color: '#2E3192' },
-          { name: 'Trabalho', value: 50, color: '#2E3192' },
-        ],
-        discentes: {
-          percentual: 35.65,
-          total: 8724,
-          envolvidos: 2848,
-          bolsistas: 166
-        },
-        docentes: {
-          percentual: 89.9,
-          percentualCoordenadores: 19.91,
-          total: 904,
-          envolvidos: 813,
-          coordenadores: 180
-        },
-        taes: {
-          percentual: 35.5,
-          percentualCoordenadores: 20.5,
-          total: 877,
-          envolvidos: 311,
-          coordenadores: 180
-        }
-      };
+      try {
+        const apiData = await getIndicators();
 
-      setData(mockData);
+        // Mapear dados do backend para o formato do frontend
+        const acoesPorCampus = apiData.acoes_por_campus.map((item: any) => ({
+          name: item.campus,
+          value: item.quantidade,
+          color: '#1565C0' // Cor padrão, ou podemos variar
+        }));
+
+        // Dados mockados para o restante (enquanto o backend não fornece tudo)
+        const mockData: DashboardData = {
+          acoesPorCidade: acoesPorCampus, // Usando dados reais aqui
+          acoesExecucao: apiData.acoes_em_execucao,
+          acoesExecutadas: apiData.acoes_executadas,
+          eventosAcademicos: apiData.eventos_academicos,
+          pessoasEnvolvidas: [
+            { name: 'Discentes', value: 350, color: '#FFC107' },
+            { name: 'Docentes', value: 150, color: '#1565C0' },
+            { name: 'TAEs', value: 80, color: '#E64A19' },
+            { name: 'Colaboradores Externos', value: 120, color: '#F4511E' },
+          ],
+          totalPessoas: 273,
+          totalEnvolvidos: 300,
+          acoesPorModalidade: [
+            { name: 'Projeto', value: 636, color: '#278837' },
+            { name: 'Curso', value: 115, color: '#2E3192' },
+            { name: 'Evento', value: 461, color: '#444' },
+            { name: 'Prestação de Serviço', value: 8, color: '#2E3192' },
+            { name: 'Programa', value: 67, color: '#FFC107' },
+          ],
+          acoesPorArea: [
+            { name: 'Educação', value: 354, color: '#278837' },
+            { name: 'Saúde', value: 133, color: '#2E3192' },
+            { name: 'Cultura', value: 159, color: '#444' },
+            { name: 'Meio Ambiente', value: 90, color: '#2E3192' },
+            { name: 'Direitos Humanos e Justiça', value: 56, color: '#FFC107' },
+            { name: 'Comunicação', value: 62, color: '#E74B23' },
+            { name: 'Tecnologia e Produção', value: 88, color: '#2E3192' },
+            { name: 'Trabalho', value: 50, color: '#2E3192' },
+          ],
+          discentes: {
+            percentual: 35.65,
+            total: 8724,
+            envolvidos: 2848,
+            bolsistas: 166
+          },
+          docentes: {
+            percentual: 89.9,
+            percentualCoordenadores: 19.91,
+            total: 904,
+            envolvidos: 813,
+            coordenadores: 180
+          },
+          taes: {
+            percentual: 35.5,
+            percentualCoordenadores: 20.5,
+            total: 877,
+            envolvidos: 311,
+            coordenadores: 180
+          }
+        };
+
+        setData(mockData);
+      } catch (error) {
+        console.error("Erro ao buscar indicadores:", error);
+        // Fallback para mock data em caso de erro (opcional, mas bom para dev)
+      }
     };
 
     fetchData();
