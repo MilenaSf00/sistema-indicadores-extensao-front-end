@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import '../css/Dashboard.css';
 import FilterSidebar from '../components/filter';
 import Footer from '../components/Footer';
@@ -39,12 +41,53 @@ interface DashboardData {
   };
 }
 
-// conectar
-const API_URL = "http://localhost:3000/api";
+const Modal = ({ content, onClose }: { content: React.ReactNode, onClose: () => void }) => {
+  if (!content) return null;
+  return (
+    <div className="modal-overlay" onClick={onClose} style={{
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+      backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 1000,
+      display: 'flex', justifyContent: 'center', alignItems: 'center'
+    }}>
+      <div className="modal-content" onClick={e => e.stopPropagation()} style={{
+        backgroundColor: 'white', padding: '20px', borderRadius: '8px',
+        width: '80%', height: '80%', overflow: 'auto', position: 'relative',
+        display: 'flex', justifyContent: 'center', alignItems: 'center'
+      }}>
+        <button onClick={onClose} style={{
+          position: 'absolute', top: '10px', right: '10px',
+          background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', zIndex: 1001
+        }}>×</button>
+        <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          {content}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const Dashboard: React.FC = () => {
   const [data, setData] = useState<DashboardData | null>(null);
   const [filters, setFilters] = useState<any>({});
+  const [modalContent, setModalContent] = useState<React.ReactNode | null>(null);
+
+  const handleDownloadPDF = async () => {
+    const element = document.querySelector('.dashboard-container') as HTMLElement;
+    if (!element) return;
+
+    const canvas = await html2canvas(element, { scale: 2 });
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+    pdf.save('dashboard-indicadores.pdf');
+  };
+
+  const openModal = (content: React.ReactNode) => {
+    setModalContent(content);
+  };
 
   const handleFilterChange = (newFilters: any) => {
     console.log("Filtros atualizados:", newFilters);
@@ -97,24 +140,24 @@ const Dashboard: React.FC = () => {
             { name: 'Trabalho', value: 50, color: '#2E3192' },
           ],
           discentes: {
-            percentual: 35.65,
-            total: 8724,
-            envolvidos: 2848,
-            bolsistas: 166
+            percentual: apiData.percentual_discentes,
+            total: apiData.total_matriculas_graduacao,
+            envolvidos: apiData.numero_discentes_envolvidos,
+            bolsistas: apiData.numero_discentes_bolsistas
           },
           docentes: {
-            percentual: 89.9,
-            percentualCoordenadores: 19.91,
-            total: 904,
-            envolvidos: 813,
-            coordenadores: 180
+            percentual: apiData.percentual_docentes || (apiData.total_docentes ? (apiData.numero_docentes_envolvidos / apiData.total_docentes) * 100 : 0),
+            percentualCoordenadores: apiData.percentual_coordenadores_docentes,
+            total: apiData.total_docentes,
+            envolvidos: apiData.numero_docentes_envolvidos,
+            coordenadores: apiData.numero_coordenadores_docentes
           },
           taes: {
-            percentual: 35.5,
-            percentualCoordenadores: 20.5,
-            total: 877,
-            envolvidos: 311,
-            coordenadores: 180
+            percentual: apiData.percentual_taes || (apiData.total_taes && apiData.numero_taes_envolvidos ? (apiData.numero_taes_envolvidos / apiData.total_taes) * 100 : 0),
+            percentualCoordenadores: apiData.percentual_coordenadores_taes,
+            total: apiData.total_taes,
+            envolvidos: apiData.numero_taes_envolvidos || 0, // Fallback if not provided
+            coordenadores: apiData.numero_coordenadores_taes
           }
         };
 
@@ -164,7 +207,7 @@ const Dashboard: React.FC = () => {
         {/* Main grafcos Area */}
         <div className="dashboard-main">
           <div className="stats-section-vertical" style={{ position: 'relative' }}>
-            <button className="download-pdf">Download PDF</button>
+            <button className="download-pdf" onClick={handleDownloadPDF}>Download PDF</button>
             <div className="chart-decoration-wrapper">
               <div className="chart-dec-tab tab-yellow"></div>
               <div className="chart-dec-tab tab-red"></div>
@@ -178,7 +221,7 @@ const Dashboard: React.FC = () => {
                     <span className="more-options">⋮</span>
                   </div>
                   <CustomBarChart data={data.acoesPorCidade} height={300} />
-                  <div className="expand-icon-container">
+                  <div className="expand-icon-container" onClick={() => openModal(<CustomBarChart data={data.acoesPorCidade} height={500} />)} style={{ cursor: 'pointer' }}>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M15 3V5H19.59L14.29 10.29L15.71 11.71L21 6.41V11H23V3H15Z" fill="#333" />
                       <path d="M3 15V21H9V19H4.41L9.71 13.71L8.29 12.29L3 17.59V13H1V15H3Z" fill="#333" />
@@ -215,7 +258,7 @@ const Dashboard: React.FC = () => {
                     <CustomPieChart data={data.pessoasEnvolvidas} size={250} />
                   </div>
                 </div>
-                <div className="expand-icon-container">
+                <div className="expand-icon-container" onClick={() => openModal(<CustomPieChart data={data.pessoasEnvolvidas} size={500} />)} style={{ cursor: 'pointer' }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M15 3V5H19.59L14.29 10.29L15.71 11.71L21 6.41V11H23V3H15Z" fill="#333" />
                     <path d="M3 15V21H9V19H4.41L9.71 13.71L8.29 12.29L3 17.59V13H1V15H3Z" fill="#333" />
@@ -245,7 +288,7 @@ const Dashboard: React.FC = () => {
                   <span className="more-options">⋮</span>
                 </div>
                 <CustomBarChart data={data.acoesPorModalidade} height={250} barColor="#278837" />
-                <div className="expand-icon-container">
+                <div className="expand-icon-container" onClick={() => openModal(<CustomBarChart data={data.acoesPorModalidade} height={500} barColor="#278837" />)} style={{ cursor: 'pointer' }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M15 3V5H19.59L14.29 10.29L15.71 11.71L21 6.41V11H23V3H15Z" fill="#333" />
                     <path d="M3 15V21H9V19H4.41L9.71 13.71L8.29 12.29L3 17.59V13H1V15H3Z" fill="#333" />
@@ -264,7 +307,7 @@ const Dashboard: React.FC = () => {
                   <span className="more-options">⋮</span>
                 </div>
                 <CustomBarChart data={data.acoesPorArea} height={300} barColor="#278837" />
-                <div className="expand-icon-container">
+                <div className="expand-icon-container" onClick={() => openModal(<CustomBarChart data={data.acoesPorArea} height={500} barColor="#278837" />)} style={{ cursor: 'pointer' }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M15 3V5H19.59L14.29 10.29L15.71 11.71L21 6.41V11H23V3H15Z" fill="#333" />
                     <path d="M3 15V21H9V19H4.41L9.71 13.71L8.29 12.29L3 17.59V13H1V15H3Z" fill="#333" />
@@ -294,7 +337,7 @@ const Dashboard: React.FC = () => {
                   <span className="more-options" style={{ float: 'right' }}>⋮</span>
                 </div>
                 <SemiCircleChart percentage={data.discentes.percentual} label="Discente" color="#FFC107" />
-                <div className="expand-icon-container">
+                <div className="expand-icon-container" onClick={() => openModal(<SemiCircleChart percentage={data.discentes.percentual} label="Discente" color="#FFC107" size={400} />)} style={{ cursor: 'pointer' }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M15 3V5H19.59L14.29 10.29L15.71 11.71L21 6.41V11H23V3H15Z" fill="#333" />
                     <path d="M3 15V21H9V19H4.41L9.71 13.71L8.29 12.29L3 17.59V13H1V15H3Z" fill="#333" />
@@ -334,7 +377,7 @@ const Dashboard: React.FC = () => {
                 <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
                   <SemiCircleChart percentage={data.docentes.percentual} label="Docente" color="#FFC107" size={200} />
                 </div>
-                <div className="expand-icon-container">
+                <div className="expand-icon-container" onClick={() => openModal(<SemiCircleChart percentage={data.docentes.percentual} label="Docente" color="#FFC107" size={400} />)} style={{ cursor: 'pointer' }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M15 3V5H19.59L14.29 10.29L15.71 11.71L21 6.41V11H23V3H15Z" fill="#333" />
                     <path d="M3 15V21H9V19H4.41L9.71 13.71L8.29 12.29L3 17.59V13H1V15H3Z" fill="#333" />
@@ -352,7 +395,7 @@ const Dashboard: React.FC = () => {
                 <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
                   <SemiCircleChart percentage={data.docentes.percentualCoordenadores} label="Docente" color="#FFC107" size={200} />
                 </div>
-                <div className="expand-icon-container">
+                <div className="expand-icon-container" onClick={() => openModal(<SemiCircleChart percentage={data.docentes.percentualCoordenadores} label="Docente" color="#FFC107" size={400} />)} style={{ cursor: 'pointer' }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M15 3V5H19.59L14.29 10.29L15.71 11.71L21 6.41V11H23V3H15Z" fill="#333" />
                     <path d="M3 15V21H9V19H4.41L9.71 13.71L8.29 12.29L3 17.59V13H1V15H3Z" fill="#333" />
@@ -392,7 +435,7 @@ const Dashboard: React.FC = () => {
                 <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
                   <SemiCircleChart percentage={data.taes.percentual} label="Docente" color="#FFC107" size={200} />
                 </div>
-                <div className="expand-icon-container">
+                <div className="expand-icon-container" onClick={() => openModal(<SemiCircleChart percentage={data.taes.percentual} label="Docente" color="#FFC107" size={400} />)} style={{ cursor: 'pointer' }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M15 3V5H19.59L14.29 10.29L15.71 11.71L21 6.41V11H23V3H15Z" fill="#333" />
                     <path d="M3 15V21H9V19H4.41L9.71 13.71L8.29 12.29L3 17.59V13H1V15H3Z" fill="#333" />
@@ -411,7 +454,7 @@ const Dashboard: React.FC = () => {
                 <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
                   <SemiCircleChart percentage={data.taes.percentualCoordenadores} label="Docente" color="#FFC107" size={200} />
                 </div>
-                <div className="expand-icon-container">
+                <div className="expand-icon-container" onClick={() => openModal(<SemiCircleChart percentage={data.taes.percentualCoordenadores} label="Docente" color="#FFC107" size={400} />)} style={{ cursor: 'pointer' }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M15 3V5H19.59L14.29 10.29L15.71 11.71L21 6.41V11H23V3H15Z" fill="#333" />
                     <path d="M3 15V21H9V19H4.41L9.71 13.71L8.29 12.29L3 17.59V13H1V15H3Z" fill="#333" />
@@ -445,6 +488,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       <Footer />
+      <Modal content={modalContent} onClose={() => setModalContent(null)} />
     </div>
   );
 };

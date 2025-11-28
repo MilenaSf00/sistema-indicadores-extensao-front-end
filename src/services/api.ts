@@ -52,6 +52,21 @@ export interface IndicatorsResponse {
     eventos_academicos: number;
     acoes_em_execucao: number;
     acoes_executadas: number;
+    percentual_discentes: number;
+    total_matriculas_graduacao: number;
+    numero_discentes_envolvidos: number;
+    numero_discentes_bolsistas: number;
+    numero_docentes_envolvidos: number;
+    total_docentes: number;
+    numero_coordenadores_docentes: number;
+    percentual_coordenadores_docentes: number;
+    total_taes: number;
+    numero_coordenadores_taes: number;
+    percentual_coordenadores_taes: number;
+    // Assuming these might exist or I'll handle them if missing
+    percentual_docentes?: number;
+    percentual_taes?: number;
+    numero_taes_envolvidos?: number;
     [key: string]: any;
 }
 
