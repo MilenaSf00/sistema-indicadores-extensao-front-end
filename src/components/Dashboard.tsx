@@ -498,7 +498,7 @@ const Dashboard: React.FC = () => {
 
         {/* Sidebar */}
         <div className="dashboard-sidebar">
-          <FilterSidebar onFilterChange={handleFilterChange} options={filterOptions} />
+          <FilterSidebar filters={filters} onFilterChange={handleFilterChange} options={filterOptions} />
         </div>
 
       </div>

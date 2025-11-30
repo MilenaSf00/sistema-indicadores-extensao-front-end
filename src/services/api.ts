@@ -77,8 +77,11 @@ export interface IndicatorsResponse {
 export const getIndicators = async (filters: any = {}): Promise<IndicatorsResponse> => {
     const params = new URLSearchParams();
     Object.keys(filters).forEach(key => {
-        if (filters[key]) {
-            params.append(key, filters[key]);
+        const value = filters[key];
+        if (Array.isArray(value)) {
+            value.forEach(val => params.append(key, val));
+        } else if (value) {
+            params.append(key, value);
         }
     });
     const response = await axios.get(`${API_URL}/indicators`, { params });
