@@ -23,7 +23,7 @@ export const login = async (username: string, password: string) => {
 
 
 
-// Função para enviar arquivo CSV
+
 // Função para enviar arquivos CSV
 export const uploadProjects = async (files: File[]): Promise<any> => {
     const formData = new FormData();
@@ -49,6 +49,8 @@ export interface AcaoPorCampus {
 
 export interface IndicatorsResponse {
     acoes_por_campus: AcaoPorCampus[];
+    acoes_por_modalidade: { modalidade: string; quantidade: number }[];
+    acoes_por_area_tematica: { area_tematica: string; quantidade: number }[];
     eventos_academicos: number;
     acoes_em_execucao: number;
     acoes_executadas: number;
@@ -60,19 +62,41 @@ export interface IndicatorsResponse {
     total_docentes: number;
     numero_coordenadores_docentes: number;
     percentual_coordenadores_docentes: number;
+    percentual_docentes: number;
     total_taes: number;
+    numero_taes_envolvidos: number;
     numero_coordenadores_taes: number;
     percentual_coordenadores_taes: number;
-    // Assuming these might exist or I'll handle them if missing
-    percentual_docentes?: number;
-    percentual_taes?: number;
-    numero_taes_envolvidos?: number;
+    percentual_taes: number;
+    total_pessoas_envolvidas: number;
+    total_pessoas_comunidade_externa: number;
     [key: string]: any;
 }
 
 // Função para pegar todos os indicadores
-export const getIndicators = async (): Promise<IndicatorsResponse> => {
-    const response = await axios.get(`${API_URL}/indicators`);
+export const getIndicators = async (filters: any = {}): Promise<IndicatorsResponse> => {
+    const params = new URLSearchParams();
+    Object.keys(filters).forEach(key => {
+        if (filters[key]) {
+            params.append(key, filters[key]);
+        }
+    });
+    const response = await axios.get(`${API_URL}/indicators`, { params });
+    return response.data;
+};
+
+export interface FilterOptions {
+    campus: string[];
+    modalidade: string[];
+    area_tematica: string[];
+    linha_tematica: string[];
+    situacao: string[];
+    ano: number[];
+    area_conhecimento: string[];
+}
+
+export const getFilterOptions = async (): Promise<FilterOptions> => {
+    const response = await axios.get(`${API_URL}/filters-options`);
     return response.data;
 };
 

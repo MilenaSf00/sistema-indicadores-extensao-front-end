@@ -4,7 +4,7 @@ import jsPDF from 'jspdf';
 import '../css/Dashboard.css';
 import FilterSidebar from '../components/filter';
 import Footer from '../components/Footer';
-import { getIndicators } from '../services/api';
+import { getIndicators, getFilterOptions, type FilterOptions } from '../services/api';
 import { CustomBarChart, CustomPieChart, SemiCircleChart, StatCard } from './ChartComponents';
 import type { ChartData } from './ChartComponents';
 
@@ -70,6 +70,15 @@ const Dashboard: React.FC = () => {
   const [data, setData] = useState<DashboardData | null>(null);
   const [filters, setFilters] = useState<any>({});
   const [modalContent, setModalContent] = useState<React.ReactNode | null>(null);
+  const [filterOptions, setFilterOptions] = useState<FilterOptions>({
+    campus: [],
+    modalidade: [],
+    area_tematica: [],
+    linha_tematica: [],
+    situacao: [],
+    ano: [],
+    area_conhecimento: []
+  });
 
   const handleDownloadPDF = async () => {
     const element = document.querySelector('.dashboard-container') as HTMLElement;
@@ -99,46 +108,42 @@ const Dashboard: React.FC = () => {
       console.log("Fetching data with filters:", filters);
 
       try {
-        const apiData = await getIndicators();
+        const apiData = await getIndicators(filters);
 
-        // Mapear dados do backend para o formato do frontend
+
         const acoesPorCampus = apiData.acoes_por_campus.map((item: any) => ({
           name: item.campus,
           value: item.quantidade,
-          color: '#1565C0' // Cor padrão, ou podemos variar
+          color: '#1565C0'
         }));
 
-        // Dados mockados para o restante (enquanto o backend não fornece tudo)
-        const mockData: DashboardData = {
-          acoesPorCidade: acoesPorCampus, // Usando dados reais aqui
+        const acoesPorModalidade = apiData.acoes_por_modalidade.map((item: any) => ({
+          name: item.modalidade,
+          value: item.quantidade,
+          color: '#278837'
+        }));
+
+        const acoesPorArea = apiData.acoes_por_area_tematica.map((item: any) => ({
+          name: item.area_tematica,
+          value: item.quantidade,
+          color: '#278837'
+        }));
+
+        const dashboardData: DashboardData = {
+          acoesPorCidade: acoesPorCampus,
           acoesExecucao: apiData.acoes_em_execucao,
           acoesExecutadas: apiData.acoes_executadas,
           eventosAcademicos: apiData.eventos_academicos,
           pessoasEnvolvidas: [
-            { name: 'Discentes', value: 350, color: '#FFC107' },
-            { name: 'Docentes', value: 150, color: '#1565C0' },
-            { name: 'TAEs', value: 80, color: '#E64A19' },
-            { name: 'Colaboradores Externos', value: 120, color: '#F4511E' },
+            { name: 'Discentes', value: apiData.numero_discentes_envolvidos, color: '#FFC107' },
+            { name: 'Docentes', value: apiData.numero_docentes_envolvidos, color: '#1565C0' },
+            { name: 'TAEs', value: apiData.numero_taes_envolvidos, color: '#E64A19' },
+            { name: 'Comunidade Externa', value: apiData.total_pessoas_comunidade_externa, color: '#F4511E' },
           ],
-          totalPessoas: 273,
-          totalEnvolvidos: 300,
-          acoesPorModalidade: [
-            { name: 'Projeto', value: 636, color: '#278837' },
-            { name: 'Curso', value: 115, color: '#2E3192' },
-            { name: 'Evento', value: 461, color: '#444' },
-            { name: 'Prestação de Serviço', value: 8, color: '#2E3192' },
-            { name: 'Programa', value: 67, color: '#FFC107' },
-          ],
-          acoesPorArea: [
-            { name: 'Educação', value: 354, color: '#278837' },
-            { name: 'Saúde', value: 133, color: '#2E3192' },
-            { name: 'Cultura', value: 159, color: '#444' },
-            { name: 'Meio Ambiente', value: 90, color: '#2E3192' },
-            { name: 'Direitos Humanos e Justiça', value: 56, color: '#FFC107' },
-            { name: 'Comunicação', value: 62, color: '#E74B23' },
-            { name: 'Tecnologia e Produção', value: 88, color: '#2E3192' },
-            { name: 'Trabalho', value: 50, color: '#2E3192' },
-          ],
+          totalPessoas: apiData.total_pessoas_comunidade_externa,
+          totalEnvolvidos: apiData.total_pessoas_envolvidas,
+          acoesPorModalidade: acoesPorModalidade,
+          acoesPorArea: acoesPorArea,
           discentes: {
             percentual: apiData.percentual_discentes,
             total: apiData.total_matriculas_graduacao,
@@ -146,30 +151,41 @@ const Dashboard: React.FC = () => {
             bolsistas: apiData.numero_discentes_bolsistas
           },
           docentes: {
-            percentual: apiData.percentual_docentes || (apiData.total_docentes ? (apiData.numero_docentes_envolvidos / apiData.total_docentes) * 100 : 0),
+            percentual: apiData.percentual_docentes,
             percentualCoordenadores: apiData.percentual_coordenadores_docentes,
             total: apiData.total_docentes,
             envolvidos: apiData.numero_docentes_envolvidos,
             coordenadores: apiData.numero_coordenadores_docentes
           },
           taes: {
-            percentual: apiData.percentual_taes || (apiData.total_taes && apiData.numero_taes_envolvidos ? (apiData.numero_taes_envolvidos / apiData.total_taes) * 100 : 0),
+            percentual: apiData.percentual_taes,
             percentualCoordenadores: apiData.percentual_coordenadores_taes,
             total: apiData.total_taes,
-            envolvidos: apiData.numero_taes_envolvidos || 0, // Fallback if not provided
+            envolvidos: apiData.numero_taes_envolvidos,
             coordenadores: apiData.numero_coordenadores_taes
           }
         };
 
-        setData(mockData);
+        setData(dashboardData);
       } catch (error) {
         console.error("Erro ao buscar indicadores:", error);
-        // Fallback para mock data em caso de erro (opcional, mas bom para dev)
       }
     };
 
     fetchData();
   }, [filters]);
+
+  useEffect(() => {
+    const fetchOptions = async () => {
+      try {
+        const options = await getFilterOptions();
+        setFilterOptions(options);
+      } catch (error) {
+        console.error("Erro ao buscar opções de filtro:", error);
+      }
+    };
+    fetchOptions();
+  }, []);
 
   if (!data) return <div>Carregando...</div>;
 
@@ -482,7 +498,7 @@ const Dashboard: React.FC = () => {
 
         {/* Sidebar */}
         <div className="dashboard-sidebar">
-          <FilterSidebar onFilterChange={handleFilterChange} />
+          <FilterSidebar onFilterChange={handleFilterChange} options={filterOptions} />
         </div>
 
       </div>

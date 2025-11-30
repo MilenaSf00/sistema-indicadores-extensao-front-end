@@ -97,7 +97,7 @@ interface SemiCircleChartProps {
     size?: number;
 }
 
-export const SemiCircleChart: React.FC<SemiCircleChartProps> = ({ percentage, label, color, size = 200 }) => {
+export const SemiCircleChart: React.FC<SemiCircleChartProps> = ({ percentage = 0, label, color, size = 200 }) => {
     const data = [
         { name: 'Value', value: percentage, color: color },
         { name: 'Remaining', value: 100 - percentage, color: '#E0E0E0' },
@@ -128,7 +128,7 @@ export const SemiCircleChart: React.FC<SemiCircleChartProps> = ({ percentage, la
 
             <div style={{ position: 'absolute', bottom: '10px', left: 0, right: 0, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <div style={{ fontSize: '24px', fontWeight: '800', color: '#333', fontFamily: 'Manrope' }}>
-                    {percentage.toLocaleString('pt-BR')}%
+                    {(percentage || 0).toLocaleString('pt-BR')}%
                 </div>
                 <div style={{ fontSize: '12px', color: '#888', fontWeight: '600', fontFamily: 'Manrope' }}>{label}</div>
             </div>
