@@ -139,3 +139,36 @@ export const isAuthenticated = (): boolean => {
 };
 
 
+
+export interface ActionDetail {
+    titulo_projeto: string;
+    campus: string;
+    modalidade: string;
+    area_conhecimento: string;
+    area_tematica: string;
+    linha_tematica: string;
+    situacao: string;
+    ano: number;
+    resumo: string;
+    numero_discentes_envolvidos?: number;
+    numero_docentes_envolvidos?: number;
+    total_tecnicos_envolvidos?: number;
+    numero_coordenadores_docentes?: number;
+    numero_coordenadores_taes?: number;
+    pessoas_comunidade_externa?: number;
+    [key: string]: any;
+}
+
+export const getActionsDetails = async (filters: any = {}): Promise<ActionDetail[]> => {
+    const params = new URLSearchParams();
+    Object.keys(filters).forEach(key => {
+        const value = filters[key];
+        if (Array.isArray(value)) {
+            value.forEach(val => params.append(key, val));
+        } else if (value) {
+            params.append(key, value);
+        }
+    });
+    const response = await axios.get(`${API_URL}/indicators/actions-details`, { params });
+    return response.data;
+};

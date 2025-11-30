@@ -4,7 +4,7 @@ import jsPDF from 'jspdf';
 import '../css/Dashboard.css';
 import FilterSidebar from '../components/filter';
 import Footer from '../components/Footer';
-import { getIndicators, getFilterOptions, type FilterOptions } from '../services/api';
+import { getIndicators, getFilterOptions, getActionsDetails, type FilterOptions, type ActionDetail } from '../services/api';
 import { CustomBarChart, CustomPieChart, SemiCircleChart, StatCard } from './ChartComponents';
 import type { ChartData } from './ChartComponents';
 
@@ -41,7 +41,7 @@ interface DashboardData {
   };
 }
 
-const ChartActionMenu = ({ chartId, title }: { chartId: string, title: string }) => {
+const ChartActionMenu = ({ chartId, title, onViewDetails }: { chartId: string, title: string, onViewDetails?: () => void }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
 
@@ -54,13 +54,11 @@ const ChartActionMenu = ({ chartId, title }: { chartId: string, title: string })
       return;
     }
 
-    // Visual feedback cursor
+
     document.body.style.cursor = 'wait';
 
     try {
-      // Capture the specific chart container
-      // We might need to temporarily hide the menu button or expand icon if we don't want them in the image
-      // But usually header is good.
+
       const canvas = await html2canvas(element, {
         scale: 2,
         backgroundColor: '#ffffff',
@@ -100,6 +98,11 @@ const ChartActionMenu = ({ chartId, title }: { chartId: string, title: string })
             <div className="menu-item" onClick={() => handleDownload('jpeg')} style={{ padding: '10px 15px', cursor: 'pointer', fontSize: '14px', fontFamily: 'Manrope', color: '#333' }}>
               Download JPEG
             </div>
+            {onViewDetails && (
+              <div className="menu-item" onClick={() => { setIsOpen(false); onViewDetails(); }} style={{ padding: '10px 15px', cursor: 'pointer', fontSize: '14px', fontFamily: 'Manrope', color: '#333', borderTop: '1px solid #eee' }}>
+                Ver detalhes
+              </div>
+            )}
           </div>
         </>
       )}
@@ -135,10 +138,193 @@ const Modal = ({ content, onClose }: { content: React.ReactNode, onClose: () => 
   );
 };
 
+const DetailsTable = ({ data, title, extraColumns }: { data: ActionDetail[], title: string, extraColumns?: { key: keyof ActionDetail, label: string }[] }) => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const [sortConfig, setSortConfig] = useState<{ key: keyof ActionDetail, direction: 'ascending' | 'descending' } | null>(null);
+
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+    setCurrentPage(1);
+  };
+
+  const sortedData = React.useMemo(() => {
+    let sortableItems = [...data];
+    if (sortConfig !== null) {
+      sortableItems.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [data, sortConfig]);
+
+  const filteredData = sortedData.filter(item =>
+    (item.titulo_projeto || "").toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+
+  const requestSort = (key: keyof ActionDetail) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const downloadCSV = () => {
+    const headers = ['Título', 'Campus', 'Modalidade', 'Área Temática', 'Área Conhecimento', 'Linha Temática', 'Situação', 'Ano', 'Resumo'];
+    if (extraColumns) {
+      extraColumns.forEach(col => headers.push(col.label));
+    }
+
+    const csvRows = [
+      headers.join(';'),
+      ...filteredData.map(row => {
+        const values = [
+          `"${row.titulo_projeto.replace(/"/g, '""')}"`,
+          row.campus,
+          row.modalidade,
+          row.area_tematica,
+          row.area_conhecimento,
+          row.linha_tematica,
+          row.situacao,
+          row.ano,
+          `"${(row.resumo || "").replace(/"/g, '""')}"`
+        ];
+        if (extraColumns) {
+          extraColumns.forEach(col => {
+            values.push(String(row[col.key] || 0));
+          });
+        }
+        return values.join(';');
+      })
+    ];
+
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute('download', `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  return (
+    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', padding: '20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h2 style={{ margin: 0, fontFamily: 'Manrope', color: '#333' }}>{title}</h2>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <input
+            type="text"
+            placeholder="Buscar por título..."
+            value={searchTerm}
+            onChange={handleSearch}
+            style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', width: '300px' }}
+          />
+          <button onClick={downloadCSV} style={{ padding: '8px 16px', backgroundColor: '#278837', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+            Exportar CSV
+          </button>
+        </div>
+      </div>
+
+      <div style={{ marginBottom: '10px', color: '#666' }}>
+        Total de registros: {filteredData.length}
+      </div>
+
+      <div style={{ flex: 1, overflow: 'auto', border: '1px solid #eee', borderRadius: '4px' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+          <thead style={{ position: 'sticky', top: 0, backgroundColor: '#f5f5f5' }}>
+            <tr>
+              <th onClick={() => requestSort('titulo_projeto')} style={{ padding: '12px', textAlign: 'left', cursor: 'pointer', minWidth: '300px' }}>Título {sortConfig?.key === 'titulo_projeto' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</th>
+              <th onClick={() => requestSort('campus')} style={{ padding: '12px', textAlign: 'left', cursor: 'pointer' }}>Campus {sortConfig?.key === 'campus' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</th>
+              <th onClick={() => requestSort('modalidade')} style={{ padding: '12px', textAlign: 'left', cursor: 'pointer' }}>Modalidade {sortConfig?.key === 'modalidade' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</th>
+              <th onClick={() => requestSort('area_tematica')} style={{ padding: '12px', textAlign: 'left', cursor: 'pointer' }}>Área Temática {sortConfig?.key === 'area_tematica' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</th>
+              <th onClick={() => requestSort('situacao')} style={{ padding: '12px', textAlign: 'left', cursor: 'pointer' }}>Situação {sortConfig?.key === 'situacao' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</th>
+              <th onClick={() => requestSort('ano')} style={{ padding: '12px', textAlign: 'left', cursor: 'pointer' }}>Ano {sortConfig?.key === 'ano' && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</th>
+              {extraColumns && extraColumns.map(col => (
+                <th key={col.key} onClick={() => requestSort(col.key)} style={{ padding: '12px', textAlign: 'left', cursor: 'pointer' }}>{col.label} {sortConfig?.key === col.key && (sortConfig.direction === 'ascending' ? '▲' : '▼')}</th>
+              ))}
+              <th style={{ padding: '12px', textAlign: 'left', minWidth: '200px' }}>Resumo</th>
+            </tr>
+          </thead>
+          <tbody>
+            {currentItems.length > 0 ? (
+              currentItems.map((item, index) => (
+                <tr key={index} style={{ borderBottom: '1px solid #eee', backgroundColor: index % 2 === 0 ? 'white' : '#f9f9f9' }}>
+                  <td style={{ padding: '12px' }}>{item.titulo_projeto}</td>
+                  <td style={{ padding: '12px' }}>{item.campus}</td>
+                  <td style={{ padding: '12px' }}>{item.modalidade}</td>
+                  <td style={{ padding: '12px' }}>{item.area_tematica}</td>
+                  <td style={{ padding: '12px' }}>{item.situacao}</td>
+                  <td style={{ padding: '12px' }}>{item.ano}</td>
+                  {extraColumns && extraColumns.map(col => (
+                    <td key={col.key} style={{ padding: '12px' }}>{item[col.key]}</td>
+                  ))}
+                  <td style={{ padding: '12px' }} title={item.resumo}>
+                    <div style={{
+                      display: '-webkit-box',
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      maxHeight: '4.5em',
+                      lineHeight: '1.5em'
+                    }}>
+                      {item.resumo}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={9 + (extraColumns ? extraColumns.length : 0)} style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
+                  Nenhum dado disponível
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px' }}>
+        <button
+          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+          style={{ padding: '8px 16px', border: '1px solid #ccc', borderRadius: '4px', background: currentPage === 1 ? '#eee' : 'white', cursor: currentPage === 1 ? 'default' : 'pointer' }}
+        >
+          Anterior
+        </button>
+        <span style={{ display: 'flex', alignItems: 'center' }}>
+          Página {currentPage} de {totalPages || 1}
+        </span>
+        <button
+          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+          disabled={currentPage === totalPages || totalPages === 0}
+          style={{ padding: '8px 16px', border: '1px solid #ccc', borderRadius: '4px', background: currentPage === totalPages || totalPages === 0 ? '#eee' : 'white', cursor: currentPage === totalPages || totalPages === 0 ? 'default' : 'pointer' }}
+        >
+          Próxima
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const Dashboard: React.FC = () => {
   const [data, setData] = useState<DashboardData | null>(null);
   const [filters, setFilters] = useState<any>({});
   const [modalContent, setModalContent] = useState<React.ReactNode | null>(null);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     campus: [],
     modalidade: [],
@@ -149,7 +335,24 @@ const Dashboard: React.FC = () => {
     area_conhecimento: []
   });
 
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const fetchDetails = async (title: string, filterFn?: (item: ActionDetail) => boolean, extraColumns?: { key: keyof ActionDetail, label: string }[]) => {
+    setCurrentDetailsTitle(title);
+    setIsDetailsModalOpen(true);
+    try {
+      openModal(<div style={{ padding: '40px', textAlign: 'center', fontSize: '18px', color: '#666' }}>Carregando detalhes...</div>);
+      const details = await getActionsDetails(filters);
+
+      let filteredDetails = details;
+      if (filterFn) {
+        filteredDetails = details.filter(filterFn);
+      }
+
+      openModal(<DetailsTable data={filteredDetails} title={title} extraColumns={extraColumns} />);
+    } catch (error) {
+      console.error("Erro ao buscar detalhes:", error);
+      openModal(<div style={{ padding: '40px', textAlign: 'center', color: '#d32f2f' }}>Erro ao carregar detalhes. Tente novamente.</div>);
+    }
+  };
 
   const handleDownloadPDF = async () => {
     setIsGeneratingPDF(true);
@@ -207,6 +410,9 @@ const Dashboard: React.FC = () => {
     console.log("Filtros atualizados:", newFilters);
     setFilters(newFilters);
   };
+
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [currentDetailsTitle, setCurrentDetailsTitle] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -278,6 +484,10 @@ const Dashboard: React.FC = () => {
     };
 
     fetchData();
+
+    if (isDetailsModalOpen) {
+      fetchDetails(currentDetailsTitle);
+    }
   }, [filters]);
 
   useEffect(() => {
@@ -347,7 +557,7 @@ const Dashboard: React.FC = () => {
                 <div className="bar-chart-content">
                   <div className="chart-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between' }}>
                     <h3>Número de Ações de Extensão</h3>
-                    <ChartActionMenu chartId="chart-acoes-extensao" title="Numero de Acoes de Extensao" />
+                    <ChartActionMenu chartId="chart-acoes-extensao" title="Numero de Acoes de Extensao" onViewDetails={() => fetchDetails("Detalhes: Número de Ações de Extensão")} />
                   </div>
                   <CustomBarChart data={data.acoesPorCidade} height={300} />
                   <div className="expand-icon-container" onClick={() => openModal(
@@ -377,7 +587,12 @@ const Dashboard: React.FC = () => {
               <div className="bar-chart-content">
                 <div className="chart-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between' }}>
                   <h3 style={{ maxWidth: '90%' }}>Número de pessoas envolvidas nos projetos de extensão executados (Equipe executora)</h3>
-                  <ChartActionMenu chartId="chart-pessoas-envolvidas" title="Pessoas Envolvidas" />
+                  <ChartActionMenu chartId="chart-pessoas-envolvidas" title="Pessoas Envolvidas" onViewDetails={() => fetchDetails("Detalhes: Pessoas Envolvidas", undefined, [
+                    { key: 'numero_discentes_envolvidos', label: 'Discentes' },
+                    { key: 'numero_docentes_envolvidos', label: 'Docentes' },
+                    { key: 'total_tecnicos_envolvidos', label: 'TAEs' },
+                    { key: 'pessoas_comunidade_externa', label: 'Comunidade Externa' }
+                  ])} />
                 </div>
                 <div className="row-body" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
                   <div className="chart-legend-left">
@@ -394,7 +609,15 @@ const Dashboard: React.FC = () => {
                 </div>
                 <div className="expand-icon-container" onClick={() => openModal(
                   <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <h3 style={{ marginBottom: '20px', fontFamily: 'Manrope', fontWeight: 800, color: '#333', textAlign: 'center' }}>Número de pessoas envolvidas nos projetos de extensão executados</h3>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                      <h3 style={{ margin: 0, fontFamily: 'Manrope', fontWeight: 800, color: '#333', textAlign: 'center', flex: 1 }}>Número de pessoas envolvidas nos projetos de extensão executados</h3>
+                      <ChartActionMenu chartId="chart-pessoas-envolvidas" title="Pessoas Envolvidas" onViewDetails={() => fetchDetails("Detalhes: Pessoas Envolvidas", undefined, [
+                        { key: 'numero_discentes_envolvidos', label: 'Discentes' },
+                        { key: 'numero_docentes_envolvidos', label: 'Docentes' },
+                        { key: 'total_tecnicos_envolvidos', label: 'TAEs' },
+                        { key: 'pessoas_comunidade_externa', label: 'Comunidade Externa' }
+                      ])} />
+                    </div>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '40px', width: '100%' }}>
                       <div className="chart-legend-left">
                         {data.pessoasEnvolvidas.map((item, idx) => (
@@ -434,7 +657,7 @@ const Dashboard: React.FC = () => {
               <div className="bar-chart-content">
                 <div className="chart-header" style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between' }}>
                   <h3>Ações por modalidade</h3>
-                  <ChartActionMenu chartId="chart-modalidade" title="Acoes por Modalidade" />
+                  <ChartActionMenu chartId="chart-modalidade" title="Acoes por Modalidade" onViewDetails={() => fetchDetails("Detalhes: Ações por Modalidade")} />
                 </div>
                 <CustomBarChart data={data.acoesPorModalidade} height={250} barColor="#278837" />
                 <div className="expand-icon-container" onClick={() => openModal(
@@ -458,7 +681,7 @@ const Dashboard: React.FC = () => {
               <div className="bar-chart-content">
                 <div className="chart-header" style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between' }}>
                   <h3>Ações por Área Temática</h3>
-                  <ChartActionMenu chartId="chart-area-tematica" title="Acoes por Area Tematica" />
+                  <ChartActionMenu chartId="chart-area-tematica" title="Acoes por Area Tematica" onViewDetails={() => fetchDetails("Detalhes: Ações por Área Temática")} />
                 </div>
                 <CustomBarChart data={data.acoesPorArea} height={300} barColor="#278837" />
                 <div className="expand-icon-container" onClick={() => openModal(
@@ -493,7 +716,7 @@ const Dashboard: React.FC = () => {
               <div className="bar-chart-content" style={{ alignItems: 'center' }}>
                 <div className="chart-header" style={{ width: '100%', marginBottom: '20px', display: 'flex', justifyContent: 'space-between' }}>
                   <h3>Percentual de discentes envolvidos em atividades de extensão</h3>
-                  <ChartActionMenu chartId="chart-discentes-percentual" title="Percentual Discentes" />
+                  <ChartActionMenu chartId="chart-discentes-percentual" title="Percentual Discentes" onViewDetails={() => fetchDetails("Detalhes: Percentual de Discentes", (item) => (item.numero_discentes_envolvidos || 0) > 0, [{ key: 'numero_discentes_envolvidos', label: 'Discentes Envolvidos' }])} />
                 </div>
                 <SemiCircleChart percentage={data.discentes.percentual} label="Discente" color="#FFC107" value={data.discentes.envolvidos} total={data.discentes.total} />
                 <div className="expand-icon-container" onClick={() => openModal(
@@ -539,7 +762,7 @@ const Dashboard: React.FC = () => {
               <div id="chart-docentes-percentual" className="bar-chart-container" style={{ margin: 0, flex: 1, position: 'relative' }}>
                 <div className="chart-header" style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '20px' }}>
                   <h3 style={{ maxWidth: '80%' }}>Percentual de docentes envolvidos em atividades de extensão</h3>
-                  <ChartActionMenu chartId="chart-docentes-percentual" title="Percentual Docentes" />
+                  <ChartActionMenu chartId="chart-docentes-percentual" title="Percentual Docentes" onViewDetails={() => fetchDetails("Detalhes: Percentual de Docentes", (item) => (item.numero_docentes_envolvidos || 0) > 0, [{ key: 'numero_docentes_envolvidos', label: 'Docentes Envolvidos' }])} />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
                   <SemiCircleChart percentage={data.docentes.percentual} label="Docente" color="#FFC107" size={200} value={data.docentes.envolvidos} total={data.docentes.total} />
@@ -565,7 +788,7 @@ const Dashboard: React.FC = () => {
               <div id="chart-docentes-coordenadores" className="bar-chart-container" style={{ margin: 0, flex: 1, position: 'relative' }}>
                 <div className="chart-header" style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '20px' }}>
                   <h3 style={{ maxWidth: '80%' }}>Percentual de coordenadores docentes</h3>
-                  <ChartActionMenu chartId="chart-docentes-coordenadores" title="Percentual Coordenadores Docentes" />
+                  <ChartActionMenu chartId="chart-docentes-coordenadores" title="Percentual Coordenadores Docentes" onViewDetails={() => fetchDetails("Detalhes: Percentual de Coordenadores Docentes", (item) => item.numero_coordenadores_docentes === 1, [{ key: 'numero_coordenadores_docentes', label: 'Coordenadores Docentes' }])} />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
                   <SemiCircleChart percentage={data.docentes.percentualCoordenadores} label="Docente" color="#FFC107" size={200} value={data.docentes.coordenadores} total={data.docentes.total} />
@@ -613,7 +836,7 @@ const Dashboard: React.FC = () => {
               <div id="chart-taes-percentual" className="bar-chart-container" style={{ margin: 0, flex: 1, position: 'relative' }}>
                 <div className="chart-header" style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '20px' }}>
                   <h3 style={{ maxWidth: '80%' }}>Percentual TAEs envolvidos em atividades de extensão</h3>
-                  <ChartActionMenu chartId="chart-taes-percentual" title="Percentual TAEs" />
+                  <ChartActionMenu chartId="chart-taes-percentual" title="Percentual TAEs" onViewDetails={() => fetchDetails("Detalhes: Percentual de TAEs", (item) => (item.total_tecnicos_envolvidos || 0) > 0, [{ key: 'total_tecnicos_envolvidos', label: 'TAEs Envolvidos' }])} />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
                   <SemiCircleChart percentage={data.taes.percentual} label="TAEs" color="#FFC107" size={200} value={data.taes.envolvidos} total={data.taes.total} />
@@ -640,7 +863,7 @@ const Dashboard: React.FC = () => {
               <div id="chart-taes-coordenadores" className="bar-chart-container" style={{ margin: 0, flex: 1, position: 'relative' }}>
                 <div className="chart-header" style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '20px' }}>
                   <h3 style={{ maxWidth: '80%' }}>Percentual TAEs coordenadores</h3>
-                  <ChartActionMenu chartId="chart-taes-coordenadores" title="Percentual Coordenadores TAEs" />
+                  <ChartActionMenu chartId="chart-taes-coordenadores" title="Percentual Coordenadores TAEs" onViewDetails={() => fetchDetails("Detalhes: Percentual de Coordenadores TAEs", (item) => item.numero_coordenadores_taes === 1, [{ key: 'numero_coordenadores_taes', label: 'Coordenadores TAEs' }])} />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
                   <SemiCircleChart percentage={data.taes.percentualCoordenadores} label="Docente" color="#FFC107" size={200} value={data.taes.coordenadores} total={data.taes.total} />
@@ -687,7 +910,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       <Footer />
-      <Modal content={modalContent} onClose={() => setModalContent(null)} />
+      <Modal content={modalContent} onClose={() => { setModalContent(null); setIsDetailsModalOpen(false); }} />
     </div>
   );
 };
