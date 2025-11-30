@@ -64,12 +64,12 @@ export interface IndicatorsResponse {
     percentual_coordenadores_docentes: number;
     percentual_docentes: number;
     total_taes: number;
-    numero_taes_envolvidos: number;
+    total_tecnicos_envolvidos: number;
     numero_coordenadores_taes: number;
     percentual_coordenadores_taes: number;
     percentual_taes: number;
     total_pessoas_envolvidas: number;
-    total_pessoas_comunidade_externa: number;
+    pessoas_comunidade_externa: number;
     [key: string]: any;
 }
 

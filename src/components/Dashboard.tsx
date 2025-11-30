@@ -242,11 +242,11 @@ const Dashboard: React.FC = () => {
           pessoasEnvolvidas: [
             { name: 'Discentes', value: apiData.numero_discentes_envolvidos, color: '#FFC107' },
             { name: 'Docentes', value: apiData.numero_docentes_envolvidos, color: '#1565C0' },
-            { name: 'TAEs', value: apiData.numero_taes_envolvidos, color: '#E64A19' },
-            { name: 'Comunidade Externa', value: apiData.total_pessoas_comunidade_externa, color: '#F4511E' },
+            { name: 'TAEs', value: apiData.total_tecnicos_envolvidos, color: '#E64A19' },
+            { name: 'Comunidade Externa', value: apiData.pessoas_comunidade_externa, color: '#F4511E' },
           ],
-          totalPessoas: apiData.total_pessoas_comunidade_externa,
-          totalEnvolvidos: apiData.total_pessoas_envolvidas,
+          totalPessoas: apiData.pessoas_comunidade_externa,
+          totalEnvolvidos: apiData.numero_discentes_envolvidos + apiData.numero_docentes_envolvidos + apiData.total_tecnicos_envolvidos + apiData.pessoas_comunidade_externa,
           acoesPorModalidade: acoesPorModalidade,
           acoesPorArea: acoesPorArea,
           discentes: {
@@ -263,10 +263,10 @@ const Dashboard: React.FC = () => {
             coordenadores: apiData.numero_coordenadores_docentes
           },
           taes: {
-            percentual: apiData.percentual_taes,
+            percentual: apiData.percentual_taes || (apiData.total_taes ? (apiData.total_tecnicos_envolvidos / apiData.total_taes) * 100 : 0),
             percentualCoordenadores: apiData.percentual_coordenadores_taes,
             total: apiData.total_taes,
-            envolvidos: apiData.numero_taes_envolvidos,
+            envolvidos: apiData.total_tecnicos_envolvidos,
             coordenadores: apiData.numero_coordenadores_taes
           }
         };
@@ -616,7 +616,7 @@ const Dashboard: React.FC = () => {
                   <ChartActionMenu chartId="chart-taes-percentual" title="Percentual TAEs" />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                  <SemiCircleChart percentage={data.taes.percentual} label="Docente" color="#FFC107" size={200} value={data.taes.envolvidos} total={data.taes.total} />
+                  <SemiCircleChart percentage={data.taes.percentual} label="TAEs" color="#FFC107" size={200} value={data.taes.envolvidos} total={data.taes.total} />
                 </div>
                 <div className="expand-icon-container" onClick={() => openModal(
                   <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -624,7 +624,7 @@ const Dashboard: React.FC = () => {
                     <p style={{ textAlign: 'center', marginBottom: '20px', color: '#666', maxWidth: '80%' }}>
                       Este gráfico mostra o percentual de TAEs envolvidos em atividades de extensão, calculado como o total de TAEs participantes dividido pelo total de TAEs da universidade.
                     </p>
-                    <SemiCircleChart percentage={data.taes.percentual} label="Docente" color="#FFC107" size={400} value={data.taes.envolvidos} total={data.taes.total} showLegend={true} />
+                    <SemiCircleChart percentage={data.taes.percentual} label="TAEs" color="#FFC107" size={400} value={data.taes.envolvidos} total={data.taes.total} showLegend={true} />
                   </div>
                 )} style={{ cursor: 'pointer' }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
