@@ -2,6 +2,20 @@ import Accordion from '../components/Accordion';
 import "../css/Ajuda.css"
 import Footer from '../components/Footer';
 
+import comoAcessarIndicadoresGif from '../assets/gifs/como-acessar-indicadores.gif';
+import acessarNavbarGif from '../assets/gifs/acessar-navbar.gif';
+import dashboard1Gif from '../assets/gifs/dashboard1.gif';
+import dashboard2Gif from '../assets/gifs/dashboard2.gif';
+import filtros1Gif from '../assets/gifs/filtros-1.gif';
+import filtros2Gif from '../assets/gifs/filtros-2.gif';
+import filtros3Gif from '../assets/gifs/filtros-3.gif';
+import detalhesGraficosGif from '../assets/gifs/detalhes-graficos.gif';
+import detalhesProcuraGif from '../assets/gifs/detalhes-procura.gif';
+import downloadGraficoGif from '../assets/gifs/download-grafico.gif';
+import downloadPaginaGif from '../assets/gifs/download-pagina.gif';
+import downloadCsvGif from '../assets/gifs/download-csv.gif';
+import sobreGif from '../assets/gifs/sobre.gif';
+
 const Ajuda: React.FC = () => {
   const accordionItems = [
     {
@@ -9,9 +23,9 @@ const Ajuda: React.FC = () => {
       content: (
         <div>
           <p>Na página inicial, identifique o botão azul de acesso aos indicadores. Você será redirecionado para a página da Dashboard automaticamente.</p>
-          <img src='src\assets\gifs\como-acessar-indicadores.gif' alt='Vídeo de demonstração da operação descrita acima' width="840" height="auto"></img>
+          <img src={comoAcessarIndicadoresGif} alt='Vídeo de demonstração da operação descrita acima' width="840" height="auto"></img>
           <p>Note que você também pode acessar a Dashboard clicando no terceiro elemento da barra horizontal no topo da página, onde está escrito "Dashboard". </p>
-          <img src='src\assets\gifs\acessar-navbar.gif' alt='Vídeo de demonstração da operação descrita acima' width="840" height="auto"></img>
+          <img src={acessarNavbarGif} alt='Vídeo de demonstração da operação descrita acima' width="840" height="auto"></img>
         </div>
       ),
     },
@@ -20,9 +34,9 @@ const Ajuda: React.FC = () => {
       content: (
         <div>
           <p>Na página da Dashboard, navegue para baixo observando os gráficos apresentados a esquerda.</p>
-          <img src='src\assets\gifs\dashboard1.gif' alt='Vídeo de demonstração da operação descrita acima' width="840" height="auto"></img>
+          <img src={dashboard1Gif} alt='Vídeo de demonstração da operação descrita acima' width="840" height="auto"></img>
           <p>Para ampliar a visualização de um dado, identifique o gráfico desejado e selecione o icone de quatro flechas encontrado no canto inferior esquerdo.</p>
-          <img src='src\assets\gifs\dashboard2.gif' alt='Vídeo de demonstração da operação descrita acima' width="840" height="auto"></img>
+          <img src={dashboard2Gif} alt='Vídeo de demonstração da operação descrita acima' width="840" height="auto"></img>
         </div>
       ),
     },
@@ -31,11 +45,11 @@ const Ajuda: React.FC = () => {
       content: (
         <div>
           <p>Na página da Dashboard, no canto direito, identifique o menu flutuante de filtragem. Selecione o filtro desejado entre as sete categorias: Área de Conhecimento, Área Temática, Linha Temática, Modalidade, Situação, Campus ou Ano. Um menu suspenso se abrirá, onde é possível selecionar dentre as diversas opções de filtragem.</p>
-          <img src='src\assets\gifs\filtros-1.gif' alt='Vídeo de demonstração da operação descrita acima' width="840" height="auto"></img>
+          <img src={filtros1Gif} alt='Vídeo de demonstração da operação descrita acima' width="840" height="auto"></img>
           <p>Os filtros escolhidos serão automaticamente aplicados aos gráficos e dados apresentados na interface de indicadores de extensão universitária. Note que é possível selecionar mais de uma opção de filtragem simultaneamente.</p>
-          <img src='src\assets\gifs\filtros-2.gif' alt='Vídeo de demonstração da operação descrita acima' width="840" height="auto"></img>
+          <img src={filtros2Gif} alt='Vídeo de demonstração da operação descrita acima' width="840" height="auto"></img>
           <p>Também é possível retirar um filtro aplicado clicando no ícone de "x" no canto superior do menu de filtragem. Para retirar todos os filtros aplicados, aperte o botão vermelho "Limpar Filtros".</p>
-          <img src='src\assets\gifs\filtros-3.gif' alt='Vídeo de demonstração da operação descrita acima' width="840" height="auto"></img>
+          <img src={filtros3Gif} alt='Vídeo de demonstração da operação descrita acima' width="840" height="auto"></img>
         </div>
       ),
     },
@@ -44,9 +58,9 @@ const Ajuda: React.FC = () => {
       content: (
         <div>
           <p>Na página da Dashboard, identifique o gráfico desejado. No canto superior direito do gráfico, clique no ícone de três pontos. Na lista suspensa aberta, clique na opção “Ver detalhes”. Um painel com informações e detalhes específicos sobre os itens filtrados aparecerá.</p>
-          <img src='src\assets\gifs\detalhes-graficos.gif' alt='Vídeo de demonstração da operação descrita acima' width="840" height="auto"></img>
+          <img src={detalhesGraficosGif} alt='Vídeo de demonstração da operação descrita acima' width="840" height="auto"></img>
           <p>Você pode encontrar mais informações sobre um item específico clicando na barra de pesquisa e inserindo o título de uma ação extencionista.</p>
-          <img src='src\assets\gifs\detalhes-procura.gif' alt='Vídeo de demonstração da operação descrita acima' width="840" height="auto"></img>
+          <img src={detalhesProcuraGif} alt='Vídeo de demonstração da operação descrita acima' width="840" height="auto"></img>
         </div>
       ),
     },
@@ -55,7 +69,7 @@ const Ajuda: React.FC = () => {
       content: (
         <div>
           <p>Na página da Dashboard, identifique o gráfico desejado. No canto superior direito do gráfico, clique no ícone de três pontos. Na lista suspensa aberta, clique na opção “Download”, selecionando o formato de imagem preferido. O download deve começar imediatamente.</p>
-          <img src='src\assets\gifs\download-grafico.gif' alt='Vídeo de demonstração da operação descrita acima' width="840" height="auto"></img>
+          <img src={downloadGraficoGif} alt='Vídeo de demonstração da operação descrita acima' width="840" height="auto"></img>
         </div>
       ),
     },
@@ -64,7 +78,7 @@ const Ajuda: React.FC = () => {
       content: (
         <div>
           <p>Na página da Dashboard, identifique e clique no botão de download azul no canto superior esquerdo da tela. O download deve começar imediatamente. Note que o donwload de todos os gráficos só está disponível no formato .PDF.</p>
-          <img src='src\assets\gifs\download-pagina.gif' alt='Vídeo de demonstração da operação descrita acima' width="840" height="auto"></img>
+          <img src={downloadPaginaGif} alt='Vídeo de demonstração da operação descrita acima' width="840" height="auto"></img>
         </div>
       ),
     },
@@ -73,7 +87,7 @@ const Ajuda: React.FC = () => {
       content: (
         <div>
           <p>Na página da Dashboard, identifique o gráfico desejado. No canto superior direito do gráfico, clique no ícone de três pontos. Na lista suspensa aberta, clique na opção “Ver detalhes”. Dentro do painel de detalhes, clique no botão verde de download do csv. O download deve começar imediatamente.</p>
-          <img src='src\assets\gifs\download-csv.gif' alt='Vídeo de demonstração da operação descrita acima' width="840" height="auto"></img>
+          <img src={downloadCsvGif} alt='Vídeo de demonstração da operação descrita acima' width="840" height="auto"></img>
         </div>
       ),
     },
@@ -82,7 +96,7 @@ const Ajuda: React.FC = () => {
       content: (
         <div>
           <p>Clique no quarto elemento da barra horizontal no topo da página, onde está escrito "Sobre". Navegue para baixo, visualizando as informações sobre o sistema, seu objetivo, desenvolvimento e equipe responsável.</p>
-          <img src='src\assets\gifs\sobre.gif' alt='Vídeo de demonstração da operação descrita acima' width="840" height="auto"></img>
+          <img src={sobreGif} alt='Vídeo de demonstração da operação descrita acima' width="840" height="auto"></img>
         </div>
       ),
     },
