@@ -58,6 +58,7 @@ const Upload: React.FC = () => {
   const [uploadHistory, setUploadHistory] = useState<HistoryItem[]>([]);
   const [lastUpdate, setLastUpdate] = useState<string | null>(null);
   const [expandedInfo, setExpandedInfo] = useState<string | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   useEffect(() => {
     // Recupera histórico do localStorage ao carregar a página
@@ -99,15 +100,19 @@ const Upload: React.FC = () => {
     if (fileInput) fileInput.value = '';
   };
 
-  const handleUpload = async () => {
+  const handleUpload = () => {
     if (files.length === 0) return;
+    setShowConfirmModal(true);
+  };
 
+  const executeUpload = async (clearExisting: boolean) => {
+    setShowConfirmModal(false);
     setIsLoading(true);
     setMessage(null);
     setProcessedFiles([]);
 
     try {
-      const result: UploadResponse = await uploadProjects(files);
+      const result: UploadResponse = await uploadProjects(files, clearExisting);
 
       const now = new Date();
       const timestamp = now.toLocaleString('pt-BR');
@@ -230,7 +235,7 @@ const Upload: React.FC = () => {
             <ul>
               {processedFiles.map((file, idx) => (
                 <li key={idx} className="processed-file-item">
-                  Ok {file}
+                  OK {file}
                 </li>
               ))}
             </ul>
@@ -246,6 +251,29 @@ const Upload: React.FC = () => {
                 <span className="history-files">{item.files.join(', ')}</span>
               </div>
             ))}
+          </div>
+        )}
+
+        {showConfirmModal && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <h3>Confirmação de Upload</h3>
+              <p>Você deseja atualizar os dados existentes? Isso irá remover os dados antigos.</p>
+              <div className="modal-actions">
+                <button
+                  className="modal-button cancel"
+                  onClick={() => setShowConfirmModal(false)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  className="modal-button confirm"
+                  onClick={() => executeUpload(true)}
+                >
+                  Confirmar
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

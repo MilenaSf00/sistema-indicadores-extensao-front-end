@@ -25,11 +25,12 @@ export const login = async (username: string, password: string) => {
 
 
 // Função para enviar arquivos CSV
-export const uploadProjects = async (files: File[]): Promise<any> => {
+export const uploadProjects = async (files: File[], clearExisting: boolean = false): Promise<any> => {
     const formData = new FormData();
     files.forEach((file) => {
         formData.append('files', file);
     });
+    formData.append('clear_existing', String(clearExisting));
 
     const response = await axios.post(
         `${API_URL}/upload-data`,

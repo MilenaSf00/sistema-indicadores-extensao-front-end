@@ -112,29 +112,82 @@ const ChartActionMenu = ({ chartId, title, onViewDetails }: { chartId: string, t
     </div>
   );
 };
-
 const Modal = ({ content, onClose }: { content: React.ReactNode, onClose: () => void }) => {
   if (!content) return null;
+
   return (
-    <div className="modal-overlay" onClick={onClose} style={{
-      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 1000,
-      display: 'flex', justifyContent: 'center', alignItems: 'center'
-    }}>
-      <div className="modal-content" onClick={e => e.stopPropagation()} style={{
-        backgroundColor: 'white', padding: '20px', borderRadius: '8px',
-        width: '80%', height: '80%', overflow: 'auto', position: 'relative',
-        display: 'flex', justifyContent: 'center', alignItems: 'center'
-      }}>
-        <button onClick={onClose} style={{
-          position: 'absolute', top: '10px', right: '10px',
-          background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', zIndex: 1001
-        }}>×</button>
-        <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+    <div
+      className="modal-overlay"
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.7)',
+        zIndex: 1000,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
+      <div
+        className="modal-content"
+        onClick={e => e.stopPropagation()}
+        style={{
+          backgroundColor: 'white',
+          padding: '50px 20px 20px 20px', // Increased top padding for close button
+          borderRadius: '8px',
+          width: '95%',         // ocupa 95% da tela
+          maxWidth: '1200px',   // largura máxima aumentada
+          height: '90%',        // altura da modal
+          maxHeight: '90vh',    // altura máxima da viewport
+          overflowY: 'auto',    // rolagem vertical se necessário
+          overflowX: 'auto',    // rolagem horizontal se necessário
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'flex-start',
+          alignItems: 'center',
+        }}
+      >
+        <button
+          onClick={onClose}
+          style={{
+            position: 'absolute',
+            top: '15px',
+            right: '20px',
+            background: 'none',
+            border: 'none',
+            fontSize: '32px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            zIndex: 1001,
+            color: '#333',
+            lineHeight: 1,
+            padding: '5px',
+          }}
+        >
+          ×
+        </button>
+
+
+        <div
+          style={{
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
           {content}
         </div>
       </div>
     </div>
+
+
   );
 };
 
