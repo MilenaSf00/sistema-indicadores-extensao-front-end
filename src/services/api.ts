@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://127.0.0.1:8000';
+const API_URL = import.meta.env.VITE_API_URL || 'https://sistema-indicadores-extensao-back-n852iieaa.vercel.app';
 
 
 export const signup = async (username: string, password: string) => {
