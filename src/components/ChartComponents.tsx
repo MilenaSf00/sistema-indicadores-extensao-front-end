@@ -90,21 +90,59 @@ export const CustomPieChart: React.FC<CustomPieChartProps> = ({ data, size = 300
 // -----------------------
 // SemiCircleChart
 // -----------------------
+import { Legend } from 'recharts';
+
 interface SemiCircleChartProps {
     percentage: number;
     label: string;
     color: string;
     size?: number;
+    value?: number;
+    total?: number;
+    showLegend?: boolean;
 }
 
-export const SemiCircleChart: React.FC<SemiCircleChartProps> = ({ percentage, label, color, size = 200 }) => {
+export const SemiCircleChart: React.FC<SemiCircleChartProps> = ({
+    percentage = 0,
+    label,
+    color,
+    size = 200,
+    value,
+    total,
+    showLegend = false
+}) => {
     const data = [
-        { name: 'Value', value: percentage, color: color },
-        { name: 'Remaining', value: 100 - percentage, color: '#E0E0E0' },
+        { name: 'Envolvidos', value: Number(percentage.toFixed(1)), color: color, absolute: value, total: total },
+        { name: 'Não Envolvidos', value: Number((100 - percentage).toFixed(1)), color: '#E0E0E0', absolute: (total && value) ? total - value : undefined, total: total },
     ];
 
+    const CustomTooltip = ({ active, payload }: any) => {
+        if (active && payload && payload.length) {
+            const item = payload[0].payload;
+            return (
+                <div style={{
+                    backgroundColor: '#fff',
+                    padding: '10px',
+                    border: '1px solid #ccc',
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                    fontFamily: 'Manrope'
+                }}>
+                    <p style={{ margin: 0, fontWeight: 'bold', color: item.color }}>{item.name}</p>
+                    <p style={{ margin: '5px 0 0 0' }}>{`${item.value}%`}</p>
+                    {item.absolute !== undefined && item.total !== undefined && (
+                        <p style={{ margin: '5px 0 0 0', fontSize: '12px', color: '#666' }}>
+                            {`${item.absolute} de ${item.total} ${label.toLowerCase()}s`}
+                        </p>
+                    )}
+                </div>
+            );
+        }
+        return null;
+    };
+
     return (
-        <div style={{ position: 'relative', width: '100%', maxWidth: size, minWidth: 150, minHeight: 100, height: size / 2 + 20, display: 'flex', justifyContent: 'center' }}>
+        <div style={{ position: 'relative', width: '100%', maxWidth: size, minWidth: 150, minHeight: 100, height: showLegend ? size / 2 + 50 : size / 2 + 20, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <ResponsiveContainer width="100%" aspect={2}>
                 <PieChart>
                     <Pie
@@ -123,12 +161,14 @@ export const SemiCircleChart: React.FC<SemiCircleChartProps> = ({ percentage, la
                             <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                     </Pie>
+                    <Tooltip content={<CustomTooltip />} />
+                    {showLegend && <Legend verticalAlign="bottom" height={36} iconType="circle" />}
                 </PieChart>
             </ResponsiveContainer>
 
-            <div style={{ position: 'absolute', bottom: '10px', left: 0, right: 0, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ position: 'absolute', bottom: showLegend ? '40px' : '10px', left: 0, right: 0, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', pointerEvents: 'none' }}>
                 <div style={{ fontSize: '24px', fontWeight: '800', color: '#333', fontFamily: 'Manrope' }}>
-                    {percentage.toLocaleString('pt-BR')}%
+                    {(percentage || 0).toLocaleString('pt-BR')}%
                 </div>
                 <div style={{ fontSize: '12px', color: '#888', fontWeight: '600', fontFamily: 'Manrope' }}>{label}</div>
             </div>

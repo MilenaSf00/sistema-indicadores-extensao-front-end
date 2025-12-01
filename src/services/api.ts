@@ -1,7 +1,6 @@
 import axios from 'axios';
-import type { ChartData } from '../components/ChartComponents';
 
-const API_URL = 'http://127.0.0.1:8000';
+const API_URL = import.meta.env.VITE_API_URL || 'https://sistema-indicadores-extensao-back-e.vercel.app';
 
 
 export const signup = async (username: string, password: string) => {
@@ -24,13 +23,17 @@ export const login = async (username: string, password: string) => {
 
 
 
-// Função para enviar arquivo CSV
-export const uploadProjects = async (file: File): Promise<ChartData[]> => {
-    const formData = new FormData();
-    formData.append('file', file);
 
-    const response = await axios.post<ChartData[]>(
-        `${API_URL}/upload-projects`,
+// Função para enviar arquivos CSV
+export const uploadProjects = async (files: File[], clearExisting: boolean = false): Promise<any> => {
+    const formData = new FormData();
+    files.forEach((file) => {
+        formData.append('files', file);
+    });
+    formData.append('clear_existing', String(clearExisting));
+
+    const response = await axios.post(
+        `${API_URL}/upload-data`,
         formData,
         {
             headers: { 'Content-Type': 'multipart/form-data' },
@@ -40,9 +43,64 @@ export const uploadProjects = async (file: File): Promise<ChartData[]> => {
     return response.data;
 };
 
-// Função para pegar o indicador
-export const getActionsByCampus = async (): Promise<ChartData[]> => {
-    const response = await axios.get<ChartData[]>(`${API_URL}/indicators/actions-by-campus`);
+export interface AcaoPorCampus {
+    campus: string;
+    quantidade: number;
+}
+
+export interface IndicatorsResponse {
+    acoes_por_campus: AcaoPorCampus[];
+    acoes_por_modalidade: { modalidade: string; quantidade: number }[];
+    acoes_por_area_tematica: { area_tematica: string; quantidade: number }[];
+    eventos_academicos: number;
+    acoes_em_execucao: number;
+    acoes_executadas: number;
+    percentual_discentes: number;
+    total_matriculas_graduacao: number;
+    numero_discentes_envolvidos: number;
+    numero_discentes_bolsistas: number;
+    numero_docentes_envolvidos: number;
+    total_docentes: number;
+    numero_coordenadores_docentes: number;
+    percentual_coordenadores_docentes: number;
+    percentual_docentes: number;
+    total_taes: number;
+    total_tecnicos_envolvidos: number;
+    numero_coordenadores_taes: number;
+    percentual_coordenadores_taes: number;
+    percentual_taes: number;
+    total_pessoas_envolvidas: number;
+    pessoas_comunidade_externa: number;
+    [key: string]: any;
+}
+
+// Função para pegar todos os indicadores
+export const getIndicators = async (filters: any = {}): Promise<IndicatorsResponse> => {
+    const params = new URLSearchParams();
+    Object.keys(filters).forEach(key => {
+        const value = filters[key];
+        if (Array.isArray(value)) {
+            value.forEach(val => params.append(key, val));
+        } else if (value) {
+            params.append(key, value);
+        }
+    });
+    const response = await axios.get(`${API_URL}/indicators`, { params });
+    return response.data;
+};
+
+export interface FilterOptions {
+    campus: string[];
+    modalidade: string[];
+    area_tematica: string[];
+    linha_tematica: string[];
+    situacao: string[];
+    ano: number[];
+    area_conhecimento: string[];
+}
+
+export const getFilterOptions = async (): Promise<FilterOptions> => {
+    const response = await axios.get(`${API_URL}/filters-options`);
     return response.data;
 };
 
@@ -82,3 +140,36 @@ export const isAuthenticated = (): boolean => {
 };
 
 
+
+export interface ActionDetail {
+    titulo_projeto: string;
+    campus: string;
+    modalidade: string;
+    area_conhecimento: string;
+    area_tematica: string;
+    linha_tematica: string;
+    situacao: string;
+    ano: number;
+    resumo: string;
+    numero_discentes_envolvidos?: number;
+    numero_docentes_envolvidos?: number;
+    total_tecnicos_envolvidos?: number;
+    numero_coordenadores_docentes?: number;
+    numero_coordenadores_taes?: number;
+    pessoas_comunidade_externa?: number;
+    [key: string]: any;
+}
+
+export const getActionsDetails = async (filters: any = {}): Promise<ActionDetail[]> => {
+    const params = new URLSearchParams();
+    Object.keys(filters).forEach(key => {
+        const value = filters[key];
+        if (Array.isArray(value)) {
+            value.forEach(val => params.append(key, val));
+        } else if (value) {
+            params.append(key, value);
+        }
+    });
+    const response = await axios.get(`${API_URL}/indicators/actions-details`, { params });
+    return response.data;
+};

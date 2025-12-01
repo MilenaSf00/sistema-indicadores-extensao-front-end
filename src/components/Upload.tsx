@@ -1,40 +1,162 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../css/Upload.css';
 import { uploadProjects } from '../services/api';
 
+interface UploadMessage {
+  type: 'success' | 'error';
+  text: string;
+}
+
+interface UploadResponse {
+  message: string;
+  files: string[];
+}
+
+interface HistoryItem {
+  timestamp: string;
+  files: string[];
+}
+
+const SPREADSHEET_INFO = [
+  {
+    name: "Projetos",
+    file: "16004_SAP",
+    columns: ["id_projeto", "modalidade", "unidade origem", "titulo", "area conhecimento", "area tematica", "linha tematica", "pessoas atendidas", "coord. projeto", "e-mail coord. projeto", "dt. início proj.", "dt. fim proj.", "situacao", "Últ. alter. proj.", "palavras chave", "resumo", "parcerias", "autoriza publicação resumo"]
+  },
+  {
+    name: "Total de Alunos",
+    file: "17044_SAP",
+    columns: ["campus", "nível", "turno", "código", "curso", "modalidade", "tipo curso", "alunos"]
+  },
+  {
+    name: "Bolsistas",
+    file: "15684_SAP",
+    columns: ["nome do bolsista", "curso do bolsista", "Área de conhecimento", "edital", "ano"]
+  },
+  {
+    name: "Participantes",
+    file: "14955_SAP",
+    columns: ["campus", "curso", "projeto", "nr. docentes", "docentes", "nr. discentes", "discentes", "nr. técnicos", "técnicos", "nr. colaboradores externos", "colaboradores externos", "nr. entidades/instituições parceiras", "entidades/instituições parceiras"]
+  },
+  {
+    name: "Docentes",
+    file: "13284_docentes",
+    columns: ["docente", "mail", "cursos", "escolaridade", "data de ingresso", "data de saida"]
+  },
+  {
+    name: "TAEs",
+    file: "17444_SAP",
+    columns: ["nome", "e-mail", "campus", "data_ingresso", "data_saida"]
+  }
+];
+
 const Upload: React.FC = () => {
-  const [file, setFile] = useState<File | null>(null);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const [message, setMessage] = useState<UploadMessage | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [processedFiles, setProcessedFiles] = useState<string[]>([]);
+  const [uploadHistory, setUploadHistory] = useState<HistoryItem[]>([]);
+  const [lastUpdate, setLastUpdate] = useState<string | null>(null);
+  const [expandedInfo, setExpandedInfo] = useState<string | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  useEffect(() => {
+    // Recupera histórico do localStorage ao carregar a página
+    const storedHistory = localStorage.getItem('uploadHistory');
+    if (storedHistory) {
+      setUploadHistory(JSON.parse(storedHistory));
+    }
+
+    const storedLastUpdate = localStorage.getItem('lastUploadTime');
+    if (storedLastUpdate) {
+      setLastUpdate(storedLastUpdate);
+    }
+  }, []);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = event.target.files?.[0];
-    if (!selectedFile) return;
+    const selectedFiles = event.target.files;
+    if (!selectedFiles) return;
 
-    if (!selectedFile.name.endsWith('.csv')) {
-      setMessage({ type: 'error', text: 'Por favor, selecione um arquivo CSV.' });
-      setFile(null);
+    const fileList = Array.from(selectedFiles);
+    const invalidFiles = fileList.filter(file => !file.name.endsWith('.csv'));
+
+    if (invalidFiles.length > 0) {
+      setMessage({ type: 'error', text: 'Por favor, selecione apenas arquivos CSV.' });
+      setFiles([]);
       return;
     }
 
-    setFile(selectedFile);
+    setFiles(fileList);
     setMessage(null);
+    setProcessedFiles([]);
   };
 
-  const handleUpload = async () => {
-    if (!file) return;
+  const handleCancel = () => {
+    setFiles([]);
+    setMessage(null);
+    setProcessedFiles([]);
 
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
+  };
+
+  const handleUpload = () => {
+    if (files.length === 0) return;
+    setShowConfirmModal(true);
+  };
+
+  const executeUpload = async (clearExisting: boolean) => {
+    setShowConfirmModal(false);
     setIsLoading(true);
     setMessage(null);
+    setProcessedFiles([]);
 
     try {
-      await uploadProjects(file);
-      setMessage({ type: 'success', text: 'Arquivo enviado com sucesso!' });
-      setFile(null);
+      const result: UploadResponse = await uploadProjects(files, clearExisting);
+
+      const now = new Date();
+      const timestamp = now.toLocaleString('pt-BR');
+
+      setMessage({
+        type: 'success',
+        text: result.message || 'Arquivos processados com sucesso!'
+      });
+
+      if (result.files && result.files.length > 0) {
+        setProcessedFiles(result.files);
+
+        // Atualiza histórico
+        const newHistory = [{ timestamp, files: result.files }, ...uploadHistory];
+        setUploadHistory(newHistory);
+
+        // Salva no localStorage para persistência
+        localStorage.setItem('uploadHistory', JSON.stringify(newHistory));
+
+        // Atualiza último upload
+        setLastUpdate(timestamp);
+        localStorage.setItem('lastUploadTime', timestamp);
+      }
+
+      setFiles([]);
+
+      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
+
     } catch (error: any) {
-      setMessage({ type: 'error', text: error.response?.data?.detail || error.message || 'Erro ao enviar arquivo.' });
+      setMessage({
+        type: 'error',
+        text: error.response?.data?.detail || error.message || 'Erro ao enviar arquivos.'
+      });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const toggleInfo = (name: string) => {
+    if (expandedInfo === name) {
+      setExpandedInfo(null);
+    } else {
+      setExpandedInfo(name);
     }
   };
 
@@ -43,38 +165,115 @@ const Upload: React.FC = () => {
       <div className="upload-card">
         <h2 className="upload-title">Upload de Projetos</h2>
         <p className="upload-description">
-          Envie o arquivo CSV com os dados dos projetos de extensão. O backend vai normalizar automaticamente os cabeçalhos.
+          Envie os arquivos CSV com os dados dos projetos de extensão. O backend vai normalizar automaticamente os cabeçalhos.
         </p>
 
-        <div className="info-box">
-          <span className="info-icon">ℹ️</span>
-          <div>
-            <strong>Formato Obrigatório:</strong> CSV. Não é necessário se preocupar com o nome exato das colunas.
+        {lastUpdate && (
+          <div className="update-badge">
+            Atualizado em: {lastUpdate}
+          </div>
+        )}
+
+        <div className="spreadsheet-info-section">
+          <h3>Planilhas Aceitas</h3>
+          <div className="spreadsheet-list">
+            {SPREADSHEET_INFO.map((item, index) => (
+              <div key={index} className="spreadsheet-item">
+                <div className="spreadsheet-header">
+                  <span className="spreadsheet-name">{item.name}</span>
+                  <span className="spreadsheet-file">({item.file})</span>
+                  <button
+                    className="info-icon"
+                    onClick={() => toggleInfo(item.name)}
+                    title="Ver colunas obrigatórias"
+                  >
+                    i
+                  </button>
+                </div>
+                {expandedInfo === item.name && (
+                  <div className="spreadsheet-details">
+                    <strong>Colunas Obrigatórias:</strong>
+                    <p>{item.columns.join(', ')}</p>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
 
-        <div className="file-drop-area">
-          <input
-            type="file"
-            className="file-input"
-            accept=".csv"
-            onChange={handleFileChange}
-          />
-          <span className="upload-icon">📁</span>
-          <p>{file ? file.name : 'Arraste e solte ou clique para selecionar um arquivo CSV'}</p>
-        </div>
+        <input
+          type="file"
+          accept=".csv"
+          multiple
+          onChange={handleFileChange}
+        />
+
+        {files.length > 0 && (
+          <>
+            <ul className="file-list">
+              {files.map((f, idx) => <li key={idx}>{f.name}</li>)}
+            </ul>
+            <button className="cancel-button" onClick={handleCancel} disabled={isLoading}>
+              Cancelar Upload
+            </button>
+          </>
+        )}
 
         <button
           className="upload-button"
           onClick={handleUpload}
-          disabled={!file || isLoading}
+          disabled={files.length === 0 || isLoading}
         >
-          {isLoading ? 'Enviando...' : 'Enviar Arquivo'}
+          {isLoading ? 'Enviando...' : 'Enviar Arquivos'}
         </button>
 
-        {message && (
-          <div className={`message ${message.type}`}>
-            {message.text}
+        {message && <div className={`message ${message.type}`}>{message.text}</div>}
+
+        {processedFiles.length > 0 && (
+          <div className="file-results">
+            <h3>Arquivos Processados:</h3>
+            <ul>
+              {processedFiles.map((file, idx) => (
+                <li key={idx} className="processed-file-item">
+                  OK {file}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {uploadHistory.length > 0 && (
+          <div className="upload-history">
+            <h3>Histórico de Uploads (Sessão Atual)</h3>
+            {uploadHistory.map((item, idx) => (
+              <div key={idx} className="history-item">
+                <span className="history-time">{item.timestamp}</span>
+                <span className="history-files">{item.files.join(', ')}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {showConfirmModal && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <h3>Confirmação de Upload</h3>
+              <p>Você deseja atualizar os dados existentes? Isso irá remover os dados antigos.</p>
+              <div className="modal-actions">
+                <button
+                  className="modal-button cancel"
+                  onClick={() => setShowConfirmModal(false)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  className="modal-button confirm"
+                  onClick={() => executeUpload(true)}
+                >
+                  Confirmar
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

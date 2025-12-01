@@ -74,6 +74,7 @@
     cursor: pointer;
     transition: background-color 0.2s;
     width: 100%;
+    margin-top: 20px;
 }
 
 .upload-button:hover {
@@ -102,4 +103,301 @@
     background-color: #f8d7da;
     color: #721c24;
     border: 1px solid #f5c6cb;
+}
+
+/* New styles for file list and results */
+.file-list {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+    text-align: left;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.file-list li {
+    padding: 8px 12px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+    color: #555;
+}
+
+.file-list li:last-child {
+    border-bottom: none;
+}
+
+.file-results {
+    margin-top: 25px;
+    text-align: left;
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.file-results h3 {
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+}
+
+.file-results ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.processed-file-item {
+    padding: 6px 0;
+    font-size: 14px;
+    color: #28a745;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Cancel Button */
+.cancel-button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.cancel-button:hover {
+    background-color: #c82333;
+}
+
+.cancel-button:disabled {
+    background-color: #e2e6ea;
+    border-color: #dae0e5;
+    color: #212529;
+    cursor: not-allowed;
+}
+
+/* Update Badge */
+.update-badge {
+    background-color: #e3f2fd;
+    color: #0d47a1;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+    margin-bottom: 20px;
+    border: 1px solid #bbdefb;
+}
+
+/* Upload History */
+.upload-history {
+    margin-top: 30px;
+    text-align: left;
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+
+.upload-history h3 {
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 13px;
+}
+
+.history-item:last-child {
+    border-bottom: none;
+}
+
+.history-time {
+    color: #666;
+    font-weight: 500;
+    min-width: 130px;
+}
+
+.history-files {
+    color: #333;
+    flex: 1;
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-left: 15px;
+}
+
+/* Spreadsheet Info Section */
+.spreadsheet-info-section {
+    margin-bottom: 30px;
+    text-align: left;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.spreadsheet-info-section h3 {
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.spreadsheet-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.spreadsheet-item {
+    border: 1px solid #f0f0f0;
+    border-radius: 6px;
+    padding: 10px;
+    background-color: #fafafa;
+}
+
+.spreadsheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.spreadsheet-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+.spreadsheet-file {
+    color: #666;
+    font-size: 13px;
+    margin-left: 8px;
+    flex: 1;
+}
+
+.info-icon {
+    background-color: #e3f2fd;
+    color: #1976d2;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.info-icon:hover {
+    background-color: #bbdefb;
+}
+
+.spreadsheet-details {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #ddd;
+    font-size: 13px;
+    color: #555;
+}
+
+.spreadsheet-details strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.spreadsheet-details p {
+    line-height: 1.4;
+    margin: 0;
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    width: 90%;
+    max-width: 450px;
+    text-align: center;
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    color: #333;
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+
+.modal-content p {
+    color: #666;
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.modal-button {
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.2s;
+}
+
+.modal-button.cancel {
+    background-color: #e0e0e0;
+    color: #333;
+}
+
+.modal-button.cancel:hover {
+    background-color: #d0d0d0;
+}
+
+.modal-button.confirm {
+    background-color: #4a90e2;
+    color: white;
+}
+
+.modal-button.confirm:hover {
+    background-color: #357abd;
 }
