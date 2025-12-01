@@ -1,0 +1,147 @@
+.ajuda-header-container {
+  width: 90%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 60px;
+  padding-bottom: 20px;
+  margin-bottom: 40px;
+}
+
+.ajuda-header-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.ajuda-header-box {
+  background-color: #278837;
+  width: 90%;
+  max-width: 1000px;
+  padding: 40px 0;
+  border-radius: 25px;
+  position: relative;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  z-index: 1;
+  overflow: visible;
+}
+
+.ajuda-title {
+  color: white;
+  font-weight: 800;
+  font-size: 48px;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  position: relative;
+  z-index: 2;
+}
+
+.ajuda-subtitle {
+  color: #278837;
+  font-weight: 700;
+  font-size: 20px;
+  margin-top: 25px;
+  text-align: center;
+  z-index: 1;
+  max-width: 90%;
+}
+
+.corner-dec-top-right {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.bar-blue-tr {
+  width: 120px;
+  height: 15px;
+  background-color: #155BD8;
+  margin-right: 20px;
+  margin-top: -8px;
+  border-radius: 2px;
+}
+
+.bar-yellow-tr {
+  width: 15px;
+  height: 40px;
+  background-color: #FFC107;
+  position: absolute;
+  right: 15px;
+  top: 10px;
+  z-index: 3;
+}
+
+.bar-red-tr {
+  width: 15px;
+  height: 50px;
+  background-color: #A63434;
+  position: absolute;
+  right: -5px;
+  top: 20px;
+}
+
+.corner-dec-bottom-left {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+.bar-red-bl {
+  width: 20px;
+  height: 60px;
+  background-color: #A63434;
+  position: absolute;
+  left: -5px;
+  bottom: 10px;
+}
+
+.bar-yellow-bl {
+  width: 15px;
+  height: 40px;
+  background-color: #FFC107;
+  position: absolute;
+  left: 20px;
+  bottom: 15px;
+}
+
+.bar-blue-bl {
+  width: 150px;
+  height: 15px;
+  background-color: #2E3192;
+  position: absolute;
+  left: 10px;
+  bottom: -5px;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  min-height: calc(100vh - 60px);
+  text-align: left;
+  padding: 80px 20px 20px 20px;
+  box-sizing: border-box;
+}
+
+h1{
+    margin-top: 100px;
+    color: #000000;
+}
+
+p {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
+  text-align: left;
+  color: #000000;
+}
