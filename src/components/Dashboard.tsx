@@ -325,6 +325,7 @@ const Dashboard: React.FC = () => {
   const [filters, setFilters] = useState<any>({});
   const [modalContent, setModalContent] = useState<React.ReactNode | null>(null);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState<string | null>(null);
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     campus: [],
     modalidade: [],
@@ -334,6 +335,13 @@ const Dashboard: React.FC = () => {
     ano: [],
     area_conhecimento: []
   });
+
+  useEffect(() => {
+    const storedLastUpdate = localStorage.getItem('lastUploadTime');
+    if (storedLastUpdate) {
+      setLastUpdate(storedLastUpdate);
+    }
+  }, []);
 
   const fetchDetails = async (title: string, filterFn?: (item: ActionDetail) => boolean, extraColumns?: { key: keyof ActionDetail, label: string }[]) => {
     setCurrentDetailsTitle(title);
@@ -530,6 +538,7 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
         <h2 className="dashboard-subtitle">Acompanhe os dados sobre as ações de extensão realizadas na UNIPAMPA</h2>
+
       </div>
 
       {/* Main Content */}
@@ -896,9 +905,13 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="update-badge">
-            Atualizado em: 10/06/2025 16:12:00
-          </div>
+
+          {lastUpdate && (
+            <div className="update-badge">
+              Atualizado em: {lastUpdate}
+            </div>
+          )}
+
 
         </div>
 
