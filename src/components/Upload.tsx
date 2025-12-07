@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import '../css/Upload.css';
-import { uploadProjects } from '../services/api';
+import {
+  clearData,
+  uploadProjetos,
+  uploadDocentes,
+  uploadTaes,
+  uploadParticipantes,
+  uploadBolsistas,
+  uploadTotalAlunos,
+  processData
+} from '../services/api';
 
 interface UploadMessage {
   type: 'success' | 'error';
@@ -112,21 +121,79 @@ const Upload: React.FC = () => {
     setProcessedFiles([]);
 
     try {
-      const result: UploadResponse = await uploadProjects(files, clearExisting);
+      if (clearExisting) {
+        setMessage({ type: 'success', text: 'Limpando dados antigos...' });
+        await clearData();
+      }
+
+      // Identificar arquivos
+      const fileMap: { [key: string]: File } = {};
+      files.forEach(file => {
+        const name = file.name.toLowerCase();
+        if (name.includes('16004') || name.includes('projetos')) fileMap['projetos'] = file;
+        else if (name.includes('13284') || name.includes('docentes')) fileMap['docentes'] = file;
+        else if (name.includes('17444') || name.includes('taes')) fileMap['taes'] = file;
+        else if (name.includes('14955') || name.includes('participantes')) fileMap['participantes'] = file;
+        else if (name.includes('15684') || name.includes('bolsistas')) fileMap['bolsistas'] = file;
+        else if (name.includes('17044') || name.includes('total_alunos') || name.includes('total-alunos')) fileMap['total_alunos'] = file;
+      });
+
+      const uploadedFilesList: string[] = [];
+
+      // Sequência de Upload
+      if (fileMap['projetos']) {
+        setMessage({ type: 'success', text: 'Enviando Projetos...' });
+        await uploadProjetos(fileMap['projetos']);
+        uploadedFilesList.push(fileMap['projetos'].name);
+      }
+
+      if (fileMap['docentes']) {
+        setMessage({ type: 'success', text: 'Enviando Docentes...' });
+        await uploadDocentes(fileMap['docentes']);
+        uploadedFilesList.push(fileMap['docentes'].name);
+      }
+
+      if (fileMap['taes']) {
+        setMessage({ type: 'success', text: 'Enviando TAEs...' });
+        await uploadTaes(fileMap['taes']);
+        uploadedFilesList.push(fileMap['taes'].name);
+      }
+
+      if (fileMap['participantes']) {
+        setMessage({ type: 'success', text: 'Enviando Participantes...' });
+        await uploadParticipantes(fileMap['participantes']);
+        uploadedFilesList.push(fileMap['participantes'].name);
+      }
+
+      if (fileMap['bolsistas']) {
+        setMessage({ type: 'success', text: 'Enviando Bolsistas...' });
+        await uploadBolsistas(fileMap['bolsistas']);
+        uploadedFilesList.push(fileMap['bolsistas'].name);
+      }
+
+      if (fileMap['total_alunos']) {
+        setMessage({ type: 'success', text: 'Enviando Total de Alunos...' });
+        await uploadTotalAlunos(fileMap['total_alunos']);
+        uploadedFilesList.push(fileMap['total_alunos'].name);
+      }
+
+      // Processamento Final
+      setMessage({ type: 'success', text: 'Processando dados e gerando indicadores...' });
+      const result = await processData();
 
       const now = new Date();
       const timestamp = now.toLocaleString('pt-BR');
 
       setMessage({
         type: 'success',
-        text: result.message || 'Arquivos processados com sucesso!'
+        text: result.message || 'Todos os arquivos foram processados com sucesso!'
       });
 
-      if (result.files && result.files.length > 0) {
-        setProcessedFiles(result.files);
+      if (uploadedFilesList.length > 0) {
+        setProcessedFiles(uploadedFilesList);
 
         // Atualiza histórico
-        const newHistory = [{ timestamp, files: result.files }, ...uploadHistory];
+        const newHistory = [{ timestamp, files: uploadedFilesList }, ...uploadHistory];
         setUploadHistory(newHistory);
 
         // Salva no localStorage para persistência
@@ -143,9 +210,10 @@ const Upload: React.FC = () => {
       if (fileInput) fileInput.value = '';
 
     } catch (error: any) {
+      console.error(error);
       setMessage({
         type: 'error',
-        text: error.response?.data?.detail || error.message || 'Erro ao enviar arquivos.'
+        text: error.response?.data?.detail || error.message || 'Erro durante o processo de upload.'
       });
     } finally {
       setIsLoading(false);

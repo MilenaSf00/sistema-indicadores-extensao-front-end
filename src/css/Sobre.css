@@ -359,3 +359,46 @@
     width: 100%;
   }
 }
+
+/* TTS Button Styles */
+.tts-container {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 15px;
+}
+
+.tts-button {
+  background-color: #278837;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  font-family: 'Manrope', sans-serif;
+}
+
+.tts-button:hover {
+  background-color: #1e6b2b;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+.tts-button:focus {
+  outline: 3px solid #FFC107;
+  outline-offset: 2px;
+}
+
+.tts-button.active {
+  background-color: #A63434;
+}
+
+.tts-button.active:hover {
+  background-color: #802020;
+}

@@ -24,22 +24,75 @@ export const login = async (username: string, password: string) => {
 
 
 
-// Função para enviar arquivos CSV
-export const uploadProjects = async (files: File[], clearExisting: boolean = false): Promise<any> => {
+// Limpa os dados do banco
+export const clearData = async (): Promise<any> => {
+    const response = await axios.post(`${API_URL}/clear-data`);
+    return response.data;
+};
+
+// Upload de Projetos
+export const uploadProjetos = async (file: File): Promise<any> => {
     const formData = new FormData();
-    files.forEach((file) => {
-        formData.append('files', file);
+    formData.append('file', file);
+    const response = await axios.post(`${API_URL}/upload/projetos`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
     });
-    formData.append('clear_existing', String(clearExisting));
+    return response.data;
+};
 
-    const response = await axios.post(
-        `${API_URL}/upload-data`,
-        formData,
-        {
-            headers: { 'Content-Type': 'multipart/form-data' },
-        }
-    );
+// Upload de Docentes
+export const uploadDocentes = async (file: File): Promise<any> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await axios.post(`${API_URL}/upload/docentes`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+};
 
+// Upload de TAEs
+export const uploadTaes = async (file: File): Promise<any> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await axios.post(`${API_URL}/upload/taes`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+};
+
+// Upload de Participantes
+export const uploadParticipantes = async (file: File): Promise<any> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await axios.post(`${API_URL}/upload/participantes`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+};
+
+// Upload de Bolsistas
+export const uploadBolsistas = async (file: File): Promise<any> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await axios.post(`${API_URL}/upload/bolsistas`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+};
+
+// Upload de Total de Alunos
+export const uploadTotalAlunos = async (file: File): Promise<any> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await axios.post(`${API_URL}/upload/total-alunos`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+};
+
+// Processar todos os dados enviados
+export const processData = async (): Promise<any> => {
+    const response = await axios.post(`${API_URL}/upload-data`);
     return response.data;
 };
 
