@@ -179,7 +179,8 @@ const Upload: React.FC = () => {
 
       // Processamento Final
       setMessage({ type: 'success', text: 'Processando dados e gerando indicadores...' });
-      const result = await processData();
+
+      const result: UploadResponse = await processData();
 
       const now = new Date();
       const timestamp = now.toLocaleString('pt-BR');
