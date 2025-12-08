@@ -33,6 +33,14 @@ const Sobre: React.FC = () => {
     }
   ];
 
+  // Preload das imagens do carrossel
+  useEffect(() => {
+    teamMembers.forEach(member => {
+      const img = new Image();
+      img.src = member.image;
+    });
+  }, []);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % teamMembers.length);
@@ -124,7 +132,6 @@ const Sobre: React.FC = () => {
                   src={teamMembers[currentSlide].image}
                   alt={`Foto de ${teamMembers[currentSlide].name}, ${teamMembers[currentSlide].role}`}
                   className="team-avatar"
-                  loading="lazy"
                 />
               </Tooltip>
 
