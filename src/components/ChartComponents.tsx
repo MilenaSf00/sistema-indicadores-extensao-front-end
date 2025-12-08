@@ -18,7 +18,7 @@ interface CustomBarChartProps {
     barColor?: string;
 }
 
-export const CustomBarChart: React.FC<CustomBarChartProps> = ({ data, height = 400, barColor = "#1762a8" }) => {
+export const CustomBarChart: React.FC<CustomBarChartProps & { animationActive?: boolean }> = ({ data, height = 400, barColor = "#1762a8", animationActive = true }) => {
     return (
         <div style={{ width: '100%', height, minHeight: 150 }}>
             <ResponsiveContainer width="100%" height="100%">
@@ -40,8 +40,9 @@ export const CustomBarChart: React.FC<CustomBarChartProps> = ({ data, height = 4
                     <Tooltip
                         cursor={{ fill: 'transparent' }}
                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
+                        formatter={(value: number) => [value, 'Valor']}
                     />
-                    <Bar dataKey="value" radius={[0, 10, 10, 0]}>
+                    <Bar dataKey="value" radius={[0, 10, 10, 0]} isAnimationActive={animationActive}>
                         {data.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color || barColor} />
                         ))}
@@ -61,7 +62,7 @@ interface CustomPieChartProps {
     size?: number; // tamanho máximo do gráfico
 }
 
-export const CustomPieChart: React.FC<CustomPieChartProps> = ({ data, size = 300 }) => {
+export const CustomPieChart: React.FC<CustomPieChartProps & { animationActive?: boolean }> = ({ data, size = 300, animationActive = true }) => {
     return (
         <div style={{ width: '100%', maxWidth: size, height: size, minWidth: 150, minHeight: 150, display: 'flex', justifyContent: 'center' }}>
             <ResponsiveContainer width="100%" aspect={1}>
@@ -75,6 +76,7 @@ export const CustomPieChart: React.FC<CustomPieChartProps> = ({ data, size = 300
                         fill="#8884d8"
                         paddingAngle={0}
                         dataKey="value"
+                        isAnimationActive={animationActive}
                     >
                         {data.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color || '#8884d8'} stroke="white" strokeWidth={2} />
@@ -102,14 +104,15 @@ interface SemiCircleChartProps {
     showLegend?: boolean;
 }
 
-export const SemiCircleChart: React.FC<SemiCircleChartProps> = ({
+export const SemiCircleChart: React.FC<SemiCircleChartProps & { animationActive?: boolean }> = ({
     percentage = 0,
     label,
     color,
     size = 200,
     value,
     total,
-    showLegend = false
+    showLegend = false,
+    animationActive = true
 }) => {
     const data = [
         { name: 'Envolvidos', value: Number(percentage.toFixed(1)), color: color, absolute: value, total: total },
@@ -156,6 +159,7 @@ export const SemiCircleChart: React.FC<SemiCircleChartProps> = ({
                         paddingAngle={0}
                         dataKey="value"
                         stroke="none"
+                        isAnimationActive={animationActive}
                     >
                         {data.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
@@ -222,7 +226,7 @@ interface CustomDonutChartProps {
     size?: number;
 }
 
-export const CustomDonutChart: React.FC<CustomDonutChartProps> = ({ data, size = 300 }) => {
+export const CustomDonutChart: React.FC<CustomDonutChartProps & { animationActive?: boolean }> = ({ data, size = 300, animationActive = true }) => {
     return (
         <div style={{ width: '100%', maxWidth: size, height: size, minWidth: 150, minHeight: 150, display: 'flex', justifyContent: 'center' }}>
             <ResponsiveContainer width="100%" aspect={1}>
@@ -236,6 +240,7 @@ export const CustomDonutChart: React.FC<CustomDonutChartProps> = ({ data, size =
                         fill="#8884d8"
                         paddingAngle={2}
                         dataKey="value"
+                        isAnimationActive={animationActive}
                     >
                         {data.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color || '#8884d8'} stroke="white" strokeWidth={2} />

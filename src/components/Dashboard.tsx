@@ -523,7 +523,7 @@ const Dashboard: React.FC = () => {
           name: item.campus,
           value: item.quantidade,
           color: '#1565C0'
-        }));
+        })).sort((a: any, b: any) => a.name.localeCompare(b.name));
 
         const acoesPorModalidade = apiData.acoes_por_modalidade.map((item: any) => ({
           name: item.modalidade,
@@ -685,7 +685,7 @@ const Dashboard: React.FC = () => {
                           <h3>Número de Ações de Extensão</h3>
                           <ChartActionMenu chartId="chart-acoes-extensao" title="Numero de Acoes de Extensao" onViewDetails={() => fetchDetails("Detalhes: Número de Ações de Extensão")} />
                         </div>
-                        <CustomBarChart data={data!.acoesPorCidade} height={300} />
+                        <CustomBarChart data={data!.acoesPorCidade} height={300} animationActive={!isGeneratingPDF} />
                         <div className="expand-icon-container" onClick={() => openModal(
                           <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                             <h3 style={{ marginBottom: '20px', fontFamily: 'Manrope', fontWeight: 800, color: '#333' }}>Número de Ações de Extensão</h3>
@@ -735,7 +735,11 @@ const Dashboard: React.FC = () => {
                     <div className="bar-chart-content">
                       <div className="chart-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between' }}>
                         <h3 style={{ maxWidth: '90%' }}>Número de pessoas participantes de projetos de extensão executados (Equipe executora)</h3>
-                        <ChartActionMenu chartId="chart-equipe-executora" title="Equipe Executora" />
+                        <ChartActionMenu
+                          chartId="chart-equipe-executora"
+                          title="Equipe Executora"
+
+                        />
                       </div>
                       <div className="row-body" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
                         <div className="chart-legend-left">
@@ -750,6 +754,7 @@ const Dashboard: React.FC = () => {
                           <CustomDonutChart
                             data={data!.equipeExecutora.data}
                             size={280}
+                            animationActive={!isGeneratingPDF}
                           />
                         </div>
                       </div>
@@ -771,6 +776,7 @@ const Dashboard: React.FC = () => {
                             <CustomDonutChart
                               data={data!.equipeExecutora.data}
                               size={450}
+                              animationActive={!isGeneratingPDF}
                             />
                           </div>
                         </div>
@@ -816,7 +822,7 @@ const Dashboard: React.FC = () => {
                         <h3>Ações por modalidade</h3>
                         <ChartActionMenu chartId="chart-modalidade" title="Acoes por Modalidade" onViewDetails={() => fetchDetails("Detalhes: Ações por Modalidade")} />
                       </div>
-                      <CustomBarChart data={data!.acoesPorModalidade} height={250} barColor="#278837" />
+                      <CustomBarChart data={data!.acoesPorModalidade} height={250} barColor="#278837" animationActive={!isGeneratingPDF} />
                       <div className="expand-icon-container" onClick={() => openModal(
                         <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                           <h3 style={{ marginBottom: '20px', fontFamily: 'Manrope', fontWeight: 800, color: '#333' }}>Ações por modalidade</h3>
@@ -844,7 +850,7 @@ const Dashboard: React.FC = () => {
                         <h3>Ações por Área Temática</h3>
                         <ChartActionMenu chartId="chart-area-tematica" title="Acoes por Area Tematica" onViewDetails={() => fetchDetails("Detalhes: Ações por Área Temática")} />
                       </div>
-                      <CustomBarChart data={data!.acoesPorArea} height={300} barColor="#278837" />
+                      <CustomBarChart data={data!.acoesPorArea} height={300} barColor="#278837" animationActive={!isGeneratingPDF} />
                       <div className="expand-icon-container" onClick={() => openModal(
                         <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                           <h3 style={{ marginBottom: '20px', fontFamily: 'Manrope', fontWeight: 800, color: '#333' }}>Ações por Área Temática</h3>
@@ -896,7 +902,7 @@ const Dashboard: React.FC = () => {
                         <h3>Percentual de discentes envolvidos em atividades de extensão</h3>
                         <ChartActionMenu chartId="chart-discentes-percentual" title="Percentual Discentes" onViewDetails={() => fetchDetails("Detalhes: Percentual de Discentes", (item) => (item.numero_discentes_envolvidos || 0) > 0, [{ key: 'numero_discentes_envolvidos', label: 'Discentes Envolvidos' }])} />
                       </div>
-                      <SemiCircleChart percentage={data!.discentes.percentual} label="Discente" color="#FFC107" value={data!.discentes.envolvidos} total={data!.discentes.total} />
+                      <SemiCircleChart percentage={data!.discentes.percentual} label="Discente" color="#FFC107" value={data!.discentes.envolvidos} total={data!.discentes.total} animationActive={!isGeneratingPDF} />
                       <div className="expand-icon-container" onClick={() => openModal(
                         <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                           <h3 style={{ marginBottom: '20px', fontFamily: 'Manrope', fontWeight: 800, color: '#333' }}>Percentual de discentes envolvidos em atividades de extensão</h3>
@@ -974,7 +980,7 @@ const Dashboard: React.FC = () => {
                           <ChartActionMenu chartId="chart-docentes-percentual" title="Percentual Docentes" onViewDetails={() => fetchDetails("Detalhes: Percentual de Docentes", (item) => (item.numero_docentes_envolvidos || 0) > 0, [{ key: 'numero_docentes_envolvidos', label: 'Docentes Envolvidos' }])} />
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                          <SemiCircleChart percentage={data!.docentes.percentual} label="Docente" color="#FFC107" size={200} value={data!.docentes.envolvidos} total={data!.docentes.total} />
+                          <SemiCircleChart percentage={data!.docentes.percentual} label="Docente" color="#FFC107" size={200} value={data!.docentes.envolvidos} total={data!.docentes.total} animationActive={!isGeneratingPDF} />
                         </div>
                         <div className="expand-icon-container" onClick={() => openModal(
                           <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -1011,7 +1017,7 @@ const Dashboard: React.FC = () => {
                           <ChartActionMenu chartId="chart-docentes-coordenadores" title="Percentual Coordenadores Docentes" onViewDetails={() => fetchDetails("Detalhes: Percentual de Coordenadores Docentes", (item) => item.numero_coordenadores_docentes === 1, [{ key: 'numero_coordenadores_docentes', label: 'Coordenadores Docentes' }])} />
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                          <SemiCircleChart percentage={data!.docentes.percentualCoordenadores} label="Docente" color="#FFC107" size={200} value={data!.docentes.coordenadores} total={data!.docentes.total} />
+                          <SemiCircleChart percentage={data!.docentes.percentualCoordenadores} label="Docente" color="#FFC107" size={200} value={data!.docentes.coordenadores} total={data!.docentes.total} animationActive={!isGeneratingPDF} />
                         </div>
                         <div className="expand-icon-container" onClick={() => openModal(
                           <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -1090,7 +1096,7 @@ const Dashboard: React.FC = () => {
                           <ChartActionMenu chartId="chart-taes-percentual" title="Percentual TAEs" onViewDetails={() => fetchDetails("Detalhes: Percentual de TAEs", (item) => (item.total_tecnicos_envolvidos || 0) > 0, [{ key: 'total_tecnicos_envolvidos', label: 'TAEs Envolvidos' }])} />
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                          <SemiCircleChart percentage={data!.taes.percentual} label="TAEs" color="#FFC107" size={200} value={data!.taes.envolvidos} total={data!.taes.total} />
+                          <SemiCircleChart percentage={data!.taes.percentual} label="TAEs" color="#FFC107" size={200} value={data!.taes.envolvidos} total={data!.taes.total} animationActive={!isGeneratingPDF} />
                         </div>
                         <div className="expand-icon-container" onClick={() => openModal(
                           <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -1098,7 +1104,7 @@ const Dashboard: React.FC = () => {
                             <p style={{ textAlign: 'center', marginBottom: '20px', color: '#666', maxWidth: '80%' }}>
                               Este gráfico mostra o percentual de TAEs envolvidos em atividades de extensão, calculado como o total de TAEs participantes dividido pelo total de TAEs da universidade.
                             </p>
-                            <SemiCircleChart percentage={data!.taes.percentual} label="TAEs" color="#FFC107" size={400} value={data!.taes.envolvidos} total={data!.taes.total} showLegend={true} />
+                            <SemiCircleChart percentage={data!.taes.percentual} label="TAEs" color="#FFC107" size={400} value={data!.taes.envolvidos} total={data!.taes.total} showLegend={true} animationActive={!isGeneratingPDF} />
                           </div>
                         )} style={{ cursor: 'pointer' }}>
                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1128,7 +1134,7 @@ const Dashboard: React.FC = () => {
                           <ChartActionMenu chartId="chart-taes-coordenadores" title="Percentual Coordenadores TAEs" onViewDetails={() => fetchDetails("Detalhes: Percentual de Coordenadores TAEs", (item) => item.numero_coordenadores_taes === 1, [{ key: 'numero_coordenadores_taes', label: 'Coordenadores TAEs' }])} />
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                          <SemiCircleChart percentage={data!.taes.percentualCoordenadores} label="Docente" color="#FFC107" size={200} value={data!.taes.coordenadores} total={data!.taes.total} />
+                          <SemiCircleChart percentage={data!.taes.percentualCoordenadores} label="TAEs" color="#FFC107" size={200} value={data!.taes.coordenadores} total={data!.taes.total} animationActive={!isGeneratingPDF} />
                         </div>
                         <div className="expand-icon-container" onClick={() => openModal(
                           <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -1136,7 +1142,7 @@ const Dashboard: React.FC = () => {
                             <p style={{ textAlign: 'center', marginBottom: '20px', color: '#666', maxWidth: '80%' }}>
                               Este gráfico mostra o percentual de TAEs que coordenam atividades de extensão, calculado como o total de coordenadores dividido pelo total de TAEs.
                             </p>
-                            <SemiCircleChart percentage={data!.taes.percentualCoordenadores} label="Docente" color="#FFC107" size={400} value={data!.taes.coordenadores} total={data!.taes.total} showLegend={true} />
+                            <SemiCircleChart percentage={data!.taes.percentualCoordenadores} label="TAEs" color="#FFC107" size={400} value={data!.taes.coordenadores} total={data!.taes.total} showLegend={true} animationActive={!isGeneratingPDF} />
                           </div>
                         )} style={{ cursor: 'pointer' }}>
                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
