@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import LogoProec from '../assets/LogoProec.png';
+import { useAuth } from '../contexts/AuthContext'
+import Footer from '../components/Footer';
 import '../css/Login.css';
 
+// Reusing the exact logic requested: Header is a sibling to the login form container.
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -11,6 +12,7 @@ const Login: React.FC = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [loginSuccess, setLoginSuccess] = useState(false);
+  const [shake, setShake] = useState(false);
 
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -21,26 +23,25 @@ const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      // Authenticate first
       await login(username, password);
-
-      // If successful, show the success animation
       setLoginSuccess(true);
-
-      // Wait for animation to finish before redirecting
       setTimeout(() => {
         navigate('/');
       }, 2000);
-
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao fazer login');
+      // Security Best Practice: Generic Error Message
+      setError('E-mail ou senha incorretos. Por favor, tente novamente.');
       setLoading(false);
+      setShake(true);
+      setTimeout(() => setShake(false), 500); // Reset shake after animation
     }
   };
 
   return (
+    // MAIN CONTAINER (PAI) - Defines page margins/structure
     <div className="login-page-container">
-      {/* 1. Full Width Header at Top */}
+
+      {/* CHILD 1: HEADER (Full Width Sibling) */}
       <div className="login-header-container">
         <div className="login-header-bg">
           <svg width="100%" height="100%" viewBox="0 0 1440 300" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
@@ -51,7 +52,7 @@ const Login: React.FC = () => {
           </svg>
         </div>
         <div className="login-header-box">
-          <h1 className="login-header-title">LOGIN</h1>
+          <h1 className="login-header-title">Login</h1>
           <div className="corner-dec-top-right">
             <div className="bar-blue-tr"></div>
             <div className="bar-yellow-tr"></div>
@@ -63,26 +64,37 @@ const Login: React.FC = () => {
             <div className="bar-blue-bl"></div>
           </div>
         </div>
+        <p className="sobre-subtitle">
+          Login para administradores do sistema.
+        </p>
       </div>
 
-      {/* 2. Main Content Wrapper: Centered Box */}
+      {/* CHILD 2: CONTENT AREA (Sibling) */}
       <div className="login-content-wrapper">
-        <img src={LogoProec} alt="Logo PROEC" className="login-logo-proec" />
 
-        <form className="login-card" onSubmit={handleSubmit}>
-          <p className="login-subtitle">
-            Acesso restrito a administradores do sistema.<br />
-            Usuários gerais podem acessar os indicadores livremente sem necessidade de autenticação.
-          </p>
+        <form className={`login-card ${shake ? 'shake' : ''}`} onSubmit={handleSubmit}>
+          <div className="login-notice-container">
+            <div className="login-notice-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+            </div>
+            <p className="login-notice-text">
+              <strong>Acesso Restrito:</strong> Este login é exclusivo para administradores.
+              <span className="login-notice-sub">Usuários gerais podem acessar os indicadores livremente sem autenticação.</span>
+            </p>
+          </div>
 
           <div className="input-group">
             <label className="login-title-label">Usuário</label>
             <input
               type="text"
               placeholder="Digite seu usuário"
-              className="login-input"
+              className={`login-input ${error ? 'error' : ''}`}
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e) => { setUsername(e.target.value); setError(''); }}
               required
               disabled={loading || loginSuccess}
             />
@@ -94,9 +106,9 @@ const Login: React.FC = () => {
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Digite sua senha"
-                className="login-input has-icon"
+                className={`login-input has-icon ${error ? 'error' : ''}`}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => { setPassword(e.target.value); setError(''); }}
                 required
                 disabled={loading || loginSuccess}
               />
@@ -122,9 +134,7 @@ const Login: React.FC = () => {
             </div>
           </div>
 
-          {error && <p className="error-message">{error}</p>}
-
-          {/* Removed Forgot Password Link as requested */}
+          {/* Inline error removed in favor of Toast */}
 
           <button
             type="submit"
@@ -148,7 +158,6 @@ const Login: React.FC = () => {
         </form>
       </div>
 
-      {/* Glassmorphism Toast Overlay */}
       {loginSuccess && (
         <div className="glass-toast-overlay">
           <div className="glass-toast">
@@ -162,7 +171,24 @@ const Login: React.FC = () => {
           </div>
         </div>
       )}
+
+      {error && !loginSuccess && (
+        <div className="error-toast-overlay">
+          <div className="error-toast">
+            <span className="error-toast-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+            </span>
+            {error}
+          </div>
+        </div>
+      )}
+      <Footer />
     </div>
+
   );
 };
 
