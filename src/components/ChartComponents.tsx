@@ -213,3 +213,46 @@ export const StatCard: React.FC<StatCardProps> = ({ value, title, color = '#155B
         </div>
     );
 };
+
+// -----------------------
+// CustomDonutChart
+// -----------------------
+interface CustomDonutChartProps {
+    data: ChartData[];
+    size?: number;
+}
+
+export const CustomDonutChart: React.FC<CustomDonutChartProps> = ({ data, size = 300 }) => {
+    return (
+        <div style={{ width: '100%', maxWidth: size, height: size, minWidth: 150, minHeight: 150, display: 'flex', justifyContent: 'center' }}>
+            <ResponsiveContainer width="100%" aspect={1}>
+                <PieChart>
+                    <Pie
+                        data={data}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius="55%"
+                        outerRadius="80%"
+                        fill="#8884d8"
+                        paddingAngle={2}
+                        dataKey="value"
+                    >
+                        {data.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color || '#8884d8'} stroke="white" strokeWidth={2} />
+                        ))}
+                    </Pie>
+                    <Tooltip
+                        contentStyle={{
+                            backgroundColor: '#fff',
+                            padding: '10px',
+                            border: '1px solid #ccc',
+                            borderRadius: '8px',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                            fontFamily: 'Manrope'
+                        }}
+                    />
+                </PieChart>
+            </ResponsiveContainer>
+        </div>
+    );
+};

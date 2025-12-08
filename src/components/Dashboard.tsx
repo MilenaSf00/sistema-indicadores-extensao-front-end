@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { toast } from 'react-toastify';
 import '../css/Dashboard.css';
 import FilterSidebar from '../components/filter';
 import Footer from '../components/Footer';
 import { getIndicators, getFilterOptions, getActionsDetails, type FilterOptions, type ActionDetail } from '../services/api';
-import { CustomBarChart, CustomPieChart, SemiCircleChart, StatCard } from './ChartComponents';
+import { CustomBarChart, SemiCircleChart, StatCard, CustomDonutChart } from './ChartComponents';
+import { SkeletonBarChart, SkeletonCard, SkeletonCircleChart, SkeletonSemiCircle, SkeletonText } from './SkeletonComponents';
 import type { ChartData } from './ChartComponents';
 
 
@@ -31,6 +33,7 @@ interface DashboardData {
     total: number;
     envolvidos: number;
     coordenadores: number;
+    ativos: number;
   };
   taes: {
     percentual: number;
@@ -38,27 +41,29 @@ interface DashboardData {
     total: number;
     envolvidos: number;
     coordenadores: number;
+    ativos: number;
+  };
+  equipeExecutora: {
+    data: ChartData[];
+    totalUnica: number;
   };
 }
 
 const ChartActionMenu = ({ chartId, title, onViewDetails }: { chartId: string, title: string, onViewDetails?: () => void }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
 
   const handleDownload = async (format: 'png' | 'jpeg') => {
     setIsOpen(false);
-    setIsDownloading(true);
+    const formatLabel = format.toUpperCase();
+    const toastId = toast.loading(`Gerando imagem ${formatLabel}...`);
+
     const element = document.getElementById(chartId);
     if (!element) {
-      setIsDownloading(false);
+      toast.update(toastId, { render: 'Elemento não encontrado', type: 'error', isLoading: false, autoClose: 3000 });
       return;
     }
 
-
-    document.body.style.cursor = 'wait';
-
     try {
-
       const canvas = await html2canvas(element, {
         scale: 2,
         backgroundColor: '#ffffff',
@@ -71,12 +76,11 @@ const ChartActionMenu = ({ chartId, title, onViewDetails }: { chartId: string, t
       link.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.${format}`;
       link.href = canvas.toDataURL(`image/${format}`);
       link.click();
+
+      toast.update(toastId, { render: `Download ${formatLabel} concluído!`, type: 'success', isLoading: false, autoClose: 3000 });
     } catch (e) {
       console.error(e);
-      alert("Erro ao baixar gráfico");
-    } finally {
-      document.body.style.cursor = 'default';
-      setIsDownloading(false);
+      toast.update(toastId, { render: `Erro ao exportar ${formatLabel}`, type: 'error', isLoading: false, autoClose: 4000 });
     }
   };
 
@@ -105,9 +109,6 @@ const ChartActionMenu = ({ chartId, title, onViewDetails }: { chartId: string, t
             )}
           </div>
         </>
-      )}
-      {isDownloading && (
-        <div style={{ position: 'absolute', top: 0, right: 30, fontSize: '12px', color: '#278837', fontWeight: 'bold' }}>Baixando...</div>
       )}
     </div>
   );
@@ -236,41 +237,50 @@ const DetailsTable = ({ data, title, extraColumns }: { data: ActionDetail[], tit
   };
 
   const downloadCSV = () => {
-    const headers = ['Título', 'Campus', 'Modalidade', 'Área Temática', 'Área Conhecimento', 'Linha Temática', 'Situação', 'Ano', 'Resumo'];
-    if (extraColumns) {
-      extraColumns.forEach(col => headers.push(col.label));
+    const toastId = toast.loading('Gerando arquivo CSV...');
+
+    try {
+      const headers = ['Título', 'Campus', 'Modalidade', 'Área Temática', 'Área Conhecimento', 'Linha Temática', 'Situação', 'Ano', 'Resumo'];
+      if (extraColumns) {
+        extraColumns.forEach(col => headers.push(col.label));
+      }
+
+      const csvRows = [
+        headers.join(';'),
+        ...filteredData.map(row => {
+          const values = [
+            `"${row.titulo_projeto.replace(/"/g, '""')}"`,
+            row.campus,
+            row.modalidade,
+            row.area_tematica,
+            row.area_conhecimento,
+            row.linha_tematica,
+            row.situacao,
+            row.ano,
+            `"${(row.resumo || "").replace(/"/g, '""')}"`
+          ];
+          if (extraColumns) {
+            extraColumns.forEach(col => {
+              values.push(String(row[col.key] || 0));
+            });
+          }
+          return values.join(';');
+        })
+      ];
+
+      const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.setAttribute('download', `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.update(toastId, { render: 'Download CSV concluído!', type: 'success', isLoading: false, autoClose: 3000 });
+    } catch (error) {
+      console.error('Erro ao gerar CSV:', error);
+      toast.update(toastId, { render: 'Erro ao exportar CSV', type: 'error', isLoading: false, autoClose: 4000 });
     }
-
-    const csvRows = [
-      headers.join(';'),
-      ...filteredData.map(row => {
-        const values = [
-          `"${row.titulo_projeto.replace(/"/g, '""')}"`,
-          row.campus,
-          row.modalidade,
-          row.area_tematica,
-          row.area_conhecimento,
-          row.linha_tematica,
-          row.situacao,
-          row.ano,
-          `"${(row.resumo || "").replace(/"/g, '""')}"`
-        ];
-        if (extraColumns) {
-          extraColumns.forEach(col => {
-            values.push(String(row[col.key] || 0));
-          });
-        }
-        return values.join(';');
-      })
-    ];
-
-    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.setAttribute('download', `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
   return (
@@ -379,6 +389,8 @@ const Dashboard: React.FC = () => {
   const [modalContent, setModalContent] = useState<React.ReactNode | null>(null);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true); // Loading state for Skeletons
+
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     campus: [],
     modalidade: [],
@@ -400,7 +412,31 @@ const Dashboard: React.FC = () => {
     setCurrentDetailsTitle(title);
     setIsDetailsModalOpen(true);
     try {
-      openModal(<div style={{ padding: '40px', textAlign: 'center', fontSize: '18px', color: '#666' }}>Carregando detalhes...</div>);
+      // Show skeleton loading state
+      openModal(
+        <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', padding: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <SkeletonText width="300px" height="28px" />
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <SkeletonText width="200px" height="36px" />
+              <SkeletonText width="120px" height="36px" />
+            </div>
+          </div>
+          <SkeletonText width="150px" height="16px" />
+          <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((_, i) => (
+              <div key={i} style={{ display: 'flex', gap: '15px' }}>
+                <SkeletonText width="25%" height="20px" />
+                <SkeletonText width="15%" height="20px" />
+                <SkeletonText width="15%" height="20px" />
+                <SkeletonText width="15%" height="20px" />
+                <SkeletonText width="10%" height="20px" />
+                <SkeletonText width="10%" height="20px" />
+              </div>
+            ))}
+          </div>
+        </div>
+      );
       const details = await getActionsDetails(filters);
 
       let filteredDetails = details;
@@ -417,50 +453,47 @@ const Dashboard: React.FC = () => {
 
   const handleDownloadPDF = async () => {
     setIsGeneratingPDF(true);
+    const toastId = toast.loading('Gerando arquivo PDF...');
 
+    await new Promise(r => setTimeout(r, 100));
 
-    setTimeout(async () => {
-      try {
-        const element = document.querySelector('.dashboard-main') as HTMLElement;
-        if (!element) {
-          setIsGeneratingPDF(false);
-          return;
-        }
+    try {
+      const element = document.querySelector('.dashboard-main') as HTMLElement;
+      if (!element) throw new Error('Elemento do dashboard não encontrado.');
 
-        const canvas = await html2canvas(element, {
-          scale: 2,
-          useCORS: true,
-          logging: false
-        });
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false
+      });
 
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        const imgWidth = pdfWidth;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pdfWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-        let heightLeft = imgHeight;
-        let position = 0;
+      let heightLeft = imgHeight;
+      let position = 0;
 
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pdfHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
         pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
         heightLeft -= pdfHeight;
-
-        while (heightLeft >= 0) {
-          position = heightLeft - imgHeight;
-          pdf.addPage();
-          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-          heightLeft -= pdfHeight;
-        }
-
-        pdf.save('dashboard-indicadores.pdf');
-      } catch (error) {
-        console.error("Erro ao gerar PDF:", error);
-        alert("Ocorreu um erro ao gerar o PDF. Tente novamente.");
-      } finally {
-        setIsGeneratingPDF(false);
       }
-    }, 100);
+
+      pdf.save('dashboard-indicadores.pdf');
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+      toast.update(toastId, { render: 'Erro ao exportar PDF', type: 'error', isLoading: false, autoClose: 4000 });
+    } finally {
+      setIsGeneratingPDF(false);
+    }
   };
 
   const openModal = (content: React.ReactNode) => {
@@ -478,6 +511,7 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       console.log("Fetching data with filters:", filters);
+      setIsLoading(true);
 
       try {
         const apiData = await getIndicators(filters);
@@ -527,20 +561,34 @@ const Dashboard: React.FC = () => {
             percentualCoordenadores: apiData.percentual_coordenadores_docentes,
             total: apiData.total_docentes,
             envolvidos: apiData.numero_docentes_envolvidos,
-            coordenadores: apiData.numero_coordenadores_docentes
+            coordenadores: apiData.numero_coordenadores_docentes,
+            ativos: apiData.ativo_docentes || apiData.total_docentes
           },
           taes: {
             percentual: apiData.percentual_taes || (apiData.total_taes ? (apiData.total_tecnicos_envolvidos / apiData.total_taes) * 100 : 0),
             percentualCoordenadores: apiData.percentual_coordenadores_taes,
             total: apiData.total_taes,
             envolvidos: apiData.total_tecnicos_envolvidos,
-            coordenadores: apiData.numero_coordenadores_taes
+            coordenadores: apiData.numero_coordenadores_taes,
+            ativos: apiData.ativo_taes || apiData.total_taes
+          },
+          equipeExecutora: {
+            data: [
+              { name: 'Técnicos', value: apiData.equipe_executora_tecnicos || 0, color: '#9C27B0' },
+              { name: 'Discentes', value: apiData.equipe_executora_discentes || 0, color: '#FFC107' },
+              { name: 'Docentes', value: apiData.equipe_executora_docentes || 0, color: '#1565C0' },
+              { name: 'Externos', value: apiData.equipe_executora_externos || 0, color: '#4CAF50' },
+            ],
+            totalUnica: apiData.equipe_executora_total_unica || 0
           }
         };
 
         setData(dashboardData);
+        setIsLoading(false); // Disable initial generic loading if it was used
       } catch (error) {
         console.error("Erro ao buscar indicadores:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -563,7 +611,8 @@ const Dashboard: React.FC = () => {
     fetchOptions();
   }, []);
 
-  if (!data) return <div>Carregando...</div>;
+  // Error state: not loading but no data
+  if (!data && !isLoading) return <div style={{ padding: '20px', textAlign: 'center' }}>Erro ao carregar dados. Por favor, recarregue a página.</div>;
 
   return (
     <div className="dashboard-container">
@@ -596,383 +645,541 @@ const Dashboard: React.FC = () => {
 
       {/* Main Content */}
       <div className="dashboard-content">
-        {isGeneratingPDF && (
-          <div className="pdf-loading-overlay">
-            <div className="pdf-loading-spinner"></div>
-            <p>Gerando PDF, aguarde...</p>
-          </div>
-        )}
-
         {/* Main grafcos Area */}
         <div className="dashboard-main">
-          <div className="stats-section-vertical" style={{ position: 'relative' }}>
-            {!isGeneratingPDF && (
-              <button className="download-pdf" onClick={handleDownloadPDF}>Download PDF</button>
-            )}
-            <div className="chart-decoration-wrapper">
-              <div className="chart-dec-tab tab-yellow"></div>
-              <div className="chart-dec-tab tab-red"></div>
-              <div className="chart-dec-tab tab-blue"></div>
-              <div className="chart-dec-tab tab-green"></div>
-              <div className="chart-dec-tab tab-yellow-bottom"></div>
-              <div id="chart-acoes-extensao" className="bar-chart-container" style={{ margin: 0, width: '100%', minHeight: '350px', position: 'relative', zIndex: 2 }}>
-                <div className="bar-chart-content">
-                  <div className="chart-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between' }}>
-                    <h3>Número de Ações de Extensão</h3>
-                    <ChartActionMenu chartId="chart-acoes-extensao" title="Numero de Acoes de Extensao" onViewDetails={() => fetchDetails("Detalhes: Número de Ações de Extensão")} />
-                  </div>
-                  <CustomBarChart data={data.acoesPorCidade} height={300} />
-                  <div className="expand-icon-container" onClick={() => openModal(
-                    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                      <h3 style={{ marginBottom: '20px', fontFamily: 'Manrope', fontWeight: 800, color: '#333' }}>Número de Ações de Extensão</h3>
-                      <CustomBarChart data={data.acoesPorCidade} height={500} />
-                    </div>
-                  )} style={{ cursor: 'pointer' }}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M15 3V5H19.59L14.29 10.29L15.71 11.71L21 6.41V11H23V3H15Z" fill="#333" />
-                      <path d="M3 15V21H9V19H4.41L9.71 13.71L8.29 12.29L3 17.59V13H1V15H3Z" fill="#333" />
-                      <path d="M21 13V17.59L15.71 12.29L14.29 13.71L19.59 19H15V21H23V13H21Z" fill="#333" />
-                      <path d="M9 3H1V11H3V6.41L8.29 11.71L9.71 10.29L4.41 5H9V3Z" fill="#333" />
-                    </svg>
-                  </div>
+          {/* ═══════════════════════════════════════════════════════════════
+              SEÇÃO: Ações de Extensão
+              ═══════════════════════════════════════════════════════════════ */}
+          <div className="section-wrapper">
+            <div className="section-divider section-divider--acoes">
+              <div className="section-divider-label">
+                <div className="icon-circle">
+                  {/* Ícone: Gráfico de barras - representa métricas/ações */}
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 3V21H21" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M7 16V12M11 16V8M15 16V14M19 16V10" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 </div>
+                Ações de Extensão
               </div>
             </div>
-            <div className="stats-row-horizontal" style={{ marginTop: '20px', display: 'flex', gap: '15px', justifyContent: 'space-between' }}>
-              <StatCard value={data.acoesExecucao} title="N° de Ações de Extensão em Execução" color="#0D3887" borderColor="#0D3887" />
-              <StatCard value={data.acoesExecutadas} title="N° de Ações de Extensão Executadas" color="#0D3887" borderColor="#0D3887" />
-              <StatCard value={data.eventosAcademicos} title="N° de Eventos Acadêmicos" color="#0D3887" borderColor="#0D3887" />
-            </div>
-          </div>
-          <div className="stats-row-wide" style={{ marginTop: '40px', alignItems: 'stretch' }}>
-            <div id="chart-pessoas-envolvidas" className="bar-chart-container" style={{ flex: 2, margin: 0, width: 'auto', minHeight: '350px', position: 'relative' }}>
-              <div className="bar-chart-content">
-                <div className="chart-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between' }}>
-                  <h3 style={{ maxWidth: '90%' }}>Número de pessoas envolvidas nos projetos de extensão executados (Equipe executora)</h3>
-                  <ChartActionMenu chartId="chart-pessoas-envolvidas" title="Pessoas Envolvidas" onViewDetails={() => fetchDetails("Detalhes: Pessoas Envolvidas", undefined, [
-                    { key: 'numero_discentes_envolvidos', label: 'Discentes' },
-                    { key: 'numero_docentes_envolvidos', label: 'Docentes' },
-                    { key: 'total_tecnicos_envolvidos', label: 'TAEs' },
-                    { key: 'pessoas_comunidade_externa', label: 'Comunidade Externa' }
-                  ])} />
-                </div>
-                <div className="row-body" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
-                  <div className="chart-legend-left">
-                    {data.pessoasEnvolvidas.map((item, idx) => (
-                      <div key={idx} className="legend-item" style={{ marginBottom: '8px' }}>
-                        <span className="legend-dot" style={{ backgroundColor: item.color, width: '15px', height: '15px' }}></span>
-                        {item.name}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="pie-chart-wrapper" style={{ marginRight: '50px' }}>
-                    <CustomPieChart data={data.pessoasEnvolvidas} size={250} />
-                  </div>
-                </div>
-                <div className="expand-icon-container" onClick={() => openModal(
-                  <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                      <h3 style={{ margin: 0, fontFamily: 'Manrope', fontWeight: 800, color: '#333', textAlign: 'center', flex: 1 }}>Número de pessoas envolvidas nos projetos de extensão executados</h3>
-                      <ChartActionMenu chartId="chart-pessoas-envolvidas" title="Pessoas Envolvidas" onViewDetails={() => fetchDetails("Detalhes: Pessoas Envolvidas", undefined, [
-                        { key: 'numero_discentes_envolvidos', label: 'Discentes' },
-                        { key: 'numero_docentes_envolvidos', label: 'Docentes' },
-                        { key: 'total_tecnicos_envolvidos', label: 'TAEs' },
-                        { key: 'pessoas_comunidade_externa', label: 'Comunidade Externa' }
-                      ])} />
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '40px', width: '100%' }}>
-                      <div className="chart-legend-left">
-                        {data.pessoasEnvolvidas.map((item, idx) => (
-                          <div key={idx} className="legend-item" style={{ marginBottom: '12px', fontSize: '16px' }}>
-                            <span className="legend-dot" style={{ backgroundColor: item.color, width: '20px', height: '20px' }}></span>
-                            {item.name}
+            <div className="section-container">
+              <div className="stats-section-vertical" style={{ position: 'relative' }}>
+                <button className="download-pdf" onClick={handleDownloadPDF} disabled={isGeneratingPDF}>
+                  {isGeneratingPDF ? 'Gerando...' : 'Download PDF'}
+                </button>
+                <div className="chart-decoration-wrapper">
+                  <div className="chart-dec-tab tab-yellow"></div>
+                  <div className="chart-dec-tab tab-red"></div>
+                  <div className="chart-dec-tab tab-blue"></div>
+                  <div className="chart-dec-tab tab-green"></div>
+                  <div className="chart-dec-tab tab-yellow-bottom"></div>
+                  <div id="chart-acoes-extensao" className="bar-chart-container" style={{ margin: 0, width: '100%', height: '420px', position: 'relative', zIndex: 2 }}>
+                    {isLoading ? (
+                      <SkeletonBarChart />
+                    ) : (
+                      <div className="bar-chart-content">
+                        <div className="chart-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between' }}>
+                          <h3>Número de Ações de Extensão</h3>
+                          <ChartActionMenu chartId="chart-acoes-extensao" title="Numero de Acoes de Extensao" onViewDetails={() => fetchDetails("Detalhes: Número de Ações de Extensão")} />
+                        </div>
+                        <CustomBarChart data={data!.acoesPorCidade} height={300} />
+                        <div className="expand-icon-container" onClick={() => openModal(
+                          <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <h3 style={{ marginBottom: '20px', fontFamily: 'Manrope', fontWeight: 800, color: '#333' }}>Número de Ações de Extensão</h3>
+                            <CustomBarChart data={data!.acoesPorCidade} height={500} />
                           </div>
-                        ))}
+                        )} style={{ cursor: 'pointer' }}>
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M15 3V5H19.59L14.29 10.29L15.71 11.71L21 6.41V11H23V3H15Z" fill="#333" />
+                            <path d="M3 15V21H9V19H4.41L9.71 13.71L8.29 12.29L3 17.59V13H1V15H3Z" fill="#333" />
+                            <path d="M21 13V17.59L15.71 12.29L14.29 13.71L19.59 19H15V21H23V13H21Z" fill="#333" />
+                            <path d="M9 3H1V11H3V6.41L8.29 11.71L9.71 10.29L4.41 5H9V3Z" fill="#333" />
+                          </svg>
+                        </div>
                       </div>
-                      <CustomPieChart data={data.pessoasEnvolvidas} size={500} />
+                    )}
+                  </div>
+                </div>
+                <div className="stats-row-horizontal" style={{ marginTop: '20px', display: 'flex', gap: '15px', justifyContent: 'space-between' }}>
+                  {isLoading ? (
+                    <>
+                      <SkeletonCard />
+                      <SkeletonCard />
+                      <SkeletonCard />
+                    </>
+                  ) : (
+                    <>
+                      <StatCard value={data!.acoesExecucao} title="N° de Ações de Extensão em Execução" color="#0D3887" borderColor="#0D3887" />
+                      <StatCard value={data!.acoesExecutadas} title="N° de Ações de Extensão Executadas" color="#0D3887" borderColor="#0D3887" />
+                      <StatCard value={data!.eventosAcademicos} title="N° de Eventos Acadêmicos" color="#0D3887" borderColor="#0D3887" />
+                    </>
+                  )}
+                </div>
+              </div>
+              <div className="stats-row-wide" style={{ marginTop: '40px', alignItems: 'stretch' }}>
+                <div id="chart-equipe-executora" className="bar-chart-container" style={{ flex: 2, margin: 0, width: 'auto', height: '420px', position: 'relative' }}>
+                  {isLoading ? (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', width: '100%', height: '100%' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <SkeletonText width="150px" />
+                        <SkeletonText width="150px" />
+                        <SkeletonText width="150px" />
+                        <SkeletonText width="150px" />
+                      </div>
+                      <SkeletonCircleChart size={280} isDonut={true} />
                     </div>
-                  </div>
-                )} style={{ cursor: 'pointer' }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M15 3V5H19.59L14.29 10.29L15.71 11.71L21 6.41V11H23V3H15Z" fill="#333" />
-                    <path d="M3 15V21H9V19H4.41L9.71 13.71L8.29 12.29L3 17.59V13H1V15H3Z" fill="#333" />
-                    <path d="M21 13V17.59L15.71 12.29L14.29 13.71L19.59 19H15V21H23V13H21Z" fill="#333" />
-                    <path d="M9 3H1V11H3V6.41L8.29 11.71L9.71 10.29L4.41 5H9V3Z" fill="#333" />
-                  </svg>
+                  ) : (
+                    <div className="bar-chart-content">
+                      <div className="chart-header" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between' }}>
+                        <h3 style={{ maxWidth: '90%' }}>Número de pessoas participantes de projetos de extensão executados (Equipe executora)</h3>
+                        <ChartActionMenu chartId="chart-equipe-executora" title="Equipe Executora" />
+                      </div>
+                      <div className="row-body" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
+                        <div className="chart-legend-left">
+                          {data!.equipeExecutora.data.map((item, idx) => (
+                            <div key={idx} className="legend-item" style={{ marginBottom: '12px' }}>
+                              <span className="legend-dot" style={{ backgroundColor: item.color, width: '15px', height: '15px' }}></span>
+                              {item.name}: <strong>{item.value.toLocaleString('pt-BR')}</strong>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="donut-chart-wrapper" style={{ marginRight: '50px' }}>
+                          <CustomDonutChart
+                            data={data!.equipeExecutora.data}
+                            size={280}
+                          />
+                        </div>
+                      </div>
+                      <div className="expand-icon-container" onClick={() => openModal(
+                        <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                          <h3 style={{ marginBottom: '20px', fontFamily: 'Manrope', fontWeight: 800, color: '#333' }}>Número de pessoas participantes de projetos de extensão executados</h3>
+                          <p style={{ textAlign: 'center', marginBottom: '20px', color: '#666', maxWidth: '80%' }}>
+                            Este gráfico mostra a distribuição da equipe executora de projetos de extensão finalizados. O valor do badge representa o total de pessoas únicas (sem repetição).
+                          </p>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '40px', width: '100%' }}>
+                            <div className="chart-legend-left">
+                              {data!.equipeExecutora.data.map((item, idx) => (
+                                <div key={idx} className="legend-item" style={{ marginBottom: '12px', fontSize: '16px' }}>
+                                  <span className="legend-dot" style={{ backgroundColor: item.color, width: '20px', height: '20px' }}></span>
+                                  {item.name}: <strong>{item.value.toLocaleString('pt-BR')}</strong>
+                                </div>
+                              ))}
+                            </div>
+                            <CustomDonutChart
+                              data={data!.equipeExecutora.data}
+                              size={450}
+                            />
+                          </div>
+                        </div>
+                      )} style={{ cursor: 'pointer' }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M15 3V5H19.59L14.29 10.29L15.71 11.71L21 6.41V11H23V3H15Z" fill="#333" />
+                          <path d="M3 15V21H9V19H4.41L9.71 13.71L8.29 12.29L3 17.59V13H1V15H3Z" fill="#333" />
+                          <path d="M21 13V17.59L15.71 12.29L14.29 13.71L19.59 19H15V21H23V13H21Z" fill="#333" />
+                          <path d="M9 3H1V11H3V6.41L8.29 11.71L9.71 10.29L4.41 5H9V3Z" fill="#333" />
+                        </svg>
+                      </div>
+                    </div>
+                  )}
+                  {!isLoading && (
+                    <div className="pie-total-badge">
+                      <span className="total-label">Total Único</span>
+                      <span className="total-value">{data!.equipeExecutora.totalUnica.toLocaleString('pt-BR')}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="stats-column" style={{ flex: 1, justifyContent: 'center', maxWidth: '300px' }}>
+                  {isLoading ? (
+                    <SkeletonCard minHeight="250px" />
+                  ) : (
+                    <div className="stat-card-green">
+                      <div className="stat-value">{data!.totalPessoas}</div>
+                      <div className="stat-label">N° de pessoas da comunidade externa</div>
+                    </div>
+                  )}
                 </div>
               </div>
-              <div className="pie-total-badge">
-                <span className="total-label">Total</span>
-                <span className="total-value">{data.totalEnvolvidos}</span>
-              </div>
-            </div>
-            <div className="stats-column" style={{ flex: 1, justifyContent: 'center', maxWidth: '300px' }}>
-              <div className="stat-card-green">
-                <div className="stat-value">{data.totalPessoas}</div>
-                <div className="stat-label">N° de pessoas da comunidade externa</div>
+
+
+
+              <div className="stats-row-wide" style={{ marginTop: '40px', flexDirection: 'column' }}>
+                {/* Modalidade */}
+                <div id="chart-modalidade" className="bar-chart-container" style={{ margin: 0, width: '100%', height: '380px', position: 'relative' }}>
+                  {isLoading ? (
+                    <SkeletonBarChart />
+                  ) : (
+                    <div className="bar-chart-content">
+                      <div className="chart-header" style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between' }}>
+                        <h3>Ações por modalidade</h3>
+                        <ChartActionMenu chartId="chart-modalidade" title="Acoes por Modalidade" onViewDetails={() => fetchDetails("Detalhes: Ações por Modalidade")} />
+                      </div>
+                      <CustomBarChart data={data!.acoesPorModalidade} height={250} barColor="#278837" />
+                      <div className="expand-icon-container" onClick={() => openModal(
+                        <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                          <h3 style={{ marginBottom: '20px', fontFamily: 'Manrope', fontWeight: 800, color: '#333' }}>Ações por modalidade</h3>
+                          <CustomBarChart data={data!.acoesPorModalidade} height={500} barColor="#278837" />
+                        </div>
+                      )} style={{ cursor: 'pointer' }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M15 3V5H19.59L14.29 10.29L15.71 11.71L21 6.41V11H23V3H15Z" fill="#333" />
+                          <path d="M3 15V21H9V19H4.41L9.71 13.71L8.29 12.29L3 17.59V13H1V15H3Z" fill="#333" />
+                          <path d="M21 13V17.59L15.71 12.29L14.29 13.71L19.59 19H15V21H23V13H21Z" fill="#333" />
+                          <path d="M9 3H1V11H3V6.41L8.29 11.71L9.71 10.29L4.41 5H9V3Z" fill="#333" />
+                        </svg>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Área Temática */}
+                <div id="chart-area-tematica" className="bar-chart-container" style={{ margin: 0, width: '100%', height: '420px', position: 'relative' }}>
+                  {isLoading ? (
+                    <SkeletonBarChart />
+                  ) : (
+                    <div className="bar-chart-content">
+                      <div className="chart-header" style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between' }}>
+                        <h3>Ações por Área Temática</h3>
+                        <ChartActionMenu chartId="chart-area-tematica" title="Acoes por Area Tematica" onViewDetails={() => fetchDetails("Detalhes: Ações por Área Temática")} />
+                      </div>
+                      <CustomBarChart data={data!.acoesPorArea} height={300} barColor="#278837" />
+                      <div className="expand-icon-container" onClick={() => openModal(
+                        <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                          <h3 style={{ marginBottom: '20px', fontFamily: 'Manrope', fontWeight: 800, color: '#333' }}>Ações por Área Temática</h3>
+                          <CustomBarChart data={data!.acoesPorArea} height={500} barColor="#278837" />
+                        </div>
+                      )} style={{ cursor: 'pointer' }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M15 3V5H19.59L14.29 10.29L15.71 11.71L21 6.41V11H23V3H15Z" fill="#333" />
+                          <path d="M3 15V21H9V19H4.41L9.71 13.71L8.29 12.29L3 17.59V13H1V15H3Z" fill="#333" />
+                          <path d="M21 13V17.59L15.71 12.29L14.29 13.71L19.59 19H15V21H23V13H21Z" fill="#333" />
+                          <path d="M9 3H1V11H3V6.41L8.29 11.71L9.71 10.29L4.41 5H9V3Z" fill="#333" />
+                        </svg>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-          <div className="stats-row-wide" style={{ marginTop: '40px', flexDirection: 'column' }}>
-            {/* Modalidade */}
-            <div id="chart-modalidade" className="bar-chart-container" style={{ margin: 0, width: '100%', minHeight: '300px', position: 'relative' }}>
-              <div className="bar-chart-content">
-                <div className="chart-header" style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between' }}>
-                  <h3>Ações por modalidade</h3>
-                  <ChartActionMenu chartId="chart-modalidade" title="Acoes por Modalidade" onViewDetails={() => fetchDetails("Detalhes: Ações por Modalidade")} />
-                </div>
-                <CustomBarChart data={data.acoesPorModalidade} height={250} barColor="#278837" />
-                <div className="expand-icon-container" onClick={() => openModal(
-                  <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <h3 style={{ marginBottom: '20px', fontFamily: 'Manrope', fontWeight: 800, color: '#333' }}>Ações por modalidade</h3>
-                    <CustomBarChart data={data.acoesPorModalidade} height={500} barColor="#278837" />
-                  </div>
-                )} style={{ cursor: 'pointer' }}>
+          {/* ═══════════════════════════════════════════════════════════════
+              SEÇÃO: Indicadores de Discentes
+              ═══════════════════════════════════════════════════════════════ */}
+          <div className="section-wrapper">
+            <div className="section-divider section-divider--discentes">
+              <div className="section-divider-label">
+                <div className="icon-circle">
+                  {/* Ícone: Capelo/Formatura - representa estudantes */}
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M15 3V5H19.59L14.29 10.29L15.71 11.71L21 6.41V11H23V3H15Z" fill="#333" />
-                    <path d="M3 15V21H9V19H4.41L9.71 13.71L8.29 12.29L3 17.59V13H1V15H3Z" fill="#333" />
-                    <path d="M21 13V17.59L15.71 12.29L14.29 13.71L19.59 19H15V21H23V13H21Z" fill="#333" />
-                    <path d="M9 3H1V11H3V6.41L8.29 11.71L9.71 10.29L4.41 5H9V3Z" fill="#333" />
+                    <path d="M12 3L1 9L5 11.18V17.18C5 17.18 5 21 12 21C19 21 19 17.18 19 17.18V11.18L21 10.09V17H23V9L12 3Z" stroke="white" strokeWidth="1.5" fill="none" />
+                    <path d="M12 3L1 9L12 15L23 9L12 3Z" fill="white" opacity="0.9" />
                   </svg>
                 </div>
+                Indicadores de Discentes
               </div>
             </div>
-
-            {/* Área Temática */}
-            <div id="chart-area-tematica" className="bar-chart-container" style={{ margin: 0, width: '100%', minHeight: '300px', position: 'relative' }}>
-              <div className="bar-chart-content">
-                <div className="chart-header" style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between' }}>
-                  <h3>Ações por Área Temática</h3>
-                  <ChartActionMenu chartId="chart-area-tematica" title="Acoes por Area Tematica" onViewDetails={() => fetchDetails("Detalhes: Ações por Área Temática")} />
+            <div className="section-container">
+              <div className="stats-section-vertical">
+                <div id="chart-discentes-percentual" className="bar-chart-container" style={{ margin: 0, width: '100%', height: '250px', marginBottom: '30px', position: 'relative' }}>
+                  {isLoading ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', height: '100%' }}>
+                      <SkeletonText width="60%" height="24px" />
+                      <div style={{ margin: '20px 0' }}>
+                        <SkeletonSemiCircle />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bar-chart-content" style={{ alignItems: 'center' }}>
+                      <div className="chart-header" style={{ width: '100%', marginBottom: '20px', display: 'flex', justifyContent: 'space-between' }}>
+                        <h3>Percentual de discentes envolvidos em atividades de extensão</h3>
+                        <ChartActionMenu chartId="chart-discentes-percentual" title="Percentual Discentes" onViewDetails={() => fetchDetails("Detalhes: Percentual de Discentes", (item) => (item.numero_discentes_envolvidos || 0) > 0, [{ key: 'numero_discentes_envolvidos', label: 'Discentes Envolvidos' }])} />
+                      </div>
+                      <SemiCircleChart percentage={data!.discentes.percentual} label="Discente" color="#FFC107" value={data!.discentes.envolvidos} total={data!.discentes.total} />
+                      <div className="expand-icon-container" onClick={() => openModal(
+                        <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                          <h3 style={{ marginBottom: '20px', fontFamily: 'Manrope', fontWeight: 800, color: '#333' }}>Percentual de discentes envolvidos em atividades de extensão</h3>
+                          <p style={{ textAlign: 'center', marginBottom: '20px', color: '#666', maxWidth: '80%' }}>
+                            Este gráfico mostra o percentual de discentes envolvidos em atividades de extensão, calculado como o total de discentes participantes dividido pelo total de discentes da universidade.
+                          </p>
+                          <SemiCircleChart percentage={data!.discentes.percentual} label="Discente" color="#FFC107" size={400} value={data!.discentes.envolvidos} total={data!.discentes.total} showLegend={true} />
+                        </div>
+                      )} style={{ cursor: 'pointer' }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M15 3V5H19.59L14.29 10.29L15.71 11.71L21 6.41V11H23V3H15Z" fill="#333" />
+                          <path d="M3 15V21H9V19H4.41L9.71 13.71L8.29 12.29L3 17.59V13H1V15H3Z" fill="#333" />
+                          <path d="M21 13V17.59L15.71 12.29L14.29 13.71L19.59 19H15V21H23V13H21Z" fill="#333" />
+                          <path d="M9 3H1V11H3V6.41L8.29 11.71L9.71 10.29L4.41 5H9V3Z" fill="#333" />
+                        </svg>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <CustomBarChart data={data.acoesPorArea} height={300} barColor="#278837" />
-                <div className="expand-icon-container" onClick={() => openModal(
-                  <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <h3 style={{ marginBottom: '20px', fontFamily: 'Manrope', fontWeight: 800, color: '#333' }}>Ações por Área Temática</h3>
-                    <CustomBarChart data={data.acoesPorArea} height={500} barColor="#278837" />
-                  </div>
-                )} style={{ cursor: 'pointer' }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M15 3V5H19.59L14.29 10.29L15.71 11.71L21 6.41V11H23V3H15Z" fill="#333" />
-                    <path d="M3 15V21H9V19H4.41L9.71 13.71L8.29 12.29L3 17.59V13H1V15H3Z" fill="#333" />
-                    <path d="M21 13V17.59L15.71 12.29L14.29 13.71L19.59 19H15V21H23V13H21Z" fill="#333" />
-                    <path d="M9 3H1V11H3V6.41L8.29 11.71L9.71 10.29L4.41 5H9V3Z" fill="#333" />
-                  </svg>
+
+                {/* Cards */}
+                <div className="stats-row-horizontal" style={{ marginBottom: '40px' }}>
+                  {isLoading ? (
+                    <>
+                      <SkeletonCard />
+                      <SkeletonCard />
+                      <SkeletonCard />
+                    </>
+                  ) : (
+                    <>
+                      <StatCard value={data!.discentes.total} title="Total de Discentes na Universidade" color="#0D3887" borderColor="#0D3887" />
+                      <StatCard value={data!.discentes.envolvidos} title="Discentes envolvidos em ações de extensão" color="#0D3887" borderColor="#0D3887" />
+                      <StatCard value={data!.discentes.bolsistas} title="N° de Discentes Bolsistas" color="#0D3887" borderColor="#0D3887" />
+                    </>
+                  )}
                 </div>
               </div>
             </div>
           </div>
-
-          {/* Discentes */}
-          <div className="section-header-pill">
-            <div className="icon-circle">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 3L1 9L12 15L21 10.09V17H23V9L12 3Z" fill="white" />
-                <path d="M5 13.18V17.18C5 17.18 5 21 12 21C19 21 19 17.18 19 17.18V13.18L12 17L5 13.18Z" fill="white" />
-              </svg>
-            </div>
-            Discentes
-          </div>
-          <div className="stats-section-vertical">
-            <div id="chart-discentes-percentual" className="bar-chart-container" style={{ margin: 0, width: '100%', marginBottom: '30px' }}>
-              <div className="bar-chart-content" style={{ alignItems: 'center' }}>
-                <div className="chart-header" style={{ width: '100%', marginBottom: '20px', display: 'flex', justifyContent: 'space-between' }}>
-                  <h3>Percentual de discentes envolvidos em atividades de extensão</h3>
-                  <ChartActionMenu chartId="chart-discentes-percentual" title="Percentual Discentes" onViewDetails={() => fetchDetails("Detalhes: Percentual de Discentes", (item) => (item.numero_discentes_envolvidos || 0) > 0, [{ key: 'numero_discentes_envolvidos', label: 'Discentes Envolvidos' }])} />
-                </div>
-                <SemiCircleChart percentage={data.discentes.percentual} label="Discente" color="#FFC107" value={data.discentes.envolvidos} total={data.discentes.total} />
-                <div className="expand-icon-container" onClick={() => openModal(
-                  <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <h3 style={{ marginBottom: '20px', fontFamily: 'Manrope', fontWeight: 800, color: '#333' }}>Percentual de discentes envolvidos em atividades de extensão</h3>
-                    <p style={{ textAlign: 'center', marginBottom: '20px', color: '#666', maxWidth: '80%' }}>
-                      Este gráfico mostra o percentual de discentes envolvidos em atividades de extensão, calculado como o total de discentes participantes dividido pelo total de discentes da universidade.
-                    </p>
-                    <SemiCircleChart percentage={data.discentes.percentual} label="Discente" color="#FFC107" size={400} value={data.discentes.envolvidos} total={data.discentes.total} showLegend={true} />
-                  </div>
-                )} style={{ cursor: 'pointer' }}>
+          {/* ═══════════════════════════════════════════════════════════════
+              SEÇÃO: Indicadores de Docentes
+              ═══════════════════════════════════════════════════════════════ */}
+          <div className="section-wrapper">
+            <div className="section-divider section-divider--docentes">
+              <div className="section-divider-label">
+                <div className="icon-circle">
+                  {/* Ícone: Apresentação/Quadro - representa professores */}
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M15 3V5H19.59L14.29 10.29L15.71 11.71L21 6.41V11H23V3H15Z" fill="#333" />
-                    <path d="M3 15V21H9V19H4.41L9.71 13.71L8.29 12.29L3 17.59V13H1V15H3Z" fill="#333" />
-                    <path d="M21 13V17.59L15.71 12.29L14.29 13.71L19.59 19H15V21H23V13H21Z" fill="#333" />
-                    <path d="M9 3H1V11H3V6.41L8.29 11.71L9.71 10.29L4.41 5H9V3Z" fill="#333" />
+                    <path d="M4 4H20V16H4V4Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                    <path d="M8 20L12 16L16 20" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M2 4H22" stroke="white" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M7 9H12M7 12H17" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
                   </svg>
+                </div>
+                Indicadores de Docentes
+              </div>
+            </div>
+            <div className="section-container">
+
+              <div className="stats-section-vertical">
+                <div style={{ display: 'flex', gap: '30px', width: '100%', marginBottom: '30px' }}>
+                  {/*Docent Envolvidos */}
+                  <div id="chart-docentes-percentual" className="bar-chart-container" style={{ margin: 0, flex: 1, height: '250px', position: 'relative' }}>
+                    {isLoading ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', height: '100%' }}>
+                        <SkeletonText width="80%" height="24px" />
+                        <div style={{ margin: '20px 0' }}>
+                          <SkeletonSemiCircle size={200} />
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="chart-header" style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '20px' }}>
+                          <h3 style={{ maxWidth: '80%' }}>Percentual de docentes envolvidos em atividades de extensão</h3>
+                          <ChartActionMenu chartId="chart-docentes-percentual" title="Percentual Docentes" onViewDetails={() => fetchDetails("Detalhes: Percentual de Docentes", (item) => (item.numero_docentes_envolvidos || 0) > 0, [{ key: 'numero_docentes_envolvidos', label: 'Docentes Envolvidos' }])} />
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                          <SemiCircleChart percentage={data!.docentes.percentual} label="Docente" color="#FFC107" size={200} value={data!.docentes.envolvidos} total={data!.docentes.total} />
+                        </div>
+                        <div className="expand-icon-container" onClick={() => openModal(
+                          <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <h3 style={{ marginBottom: '20px', fontFamily: 'Manrope', fontWeight: 800, color: '#333' }}>Percentual de docentes envolvidos em atividades de extensão</h3>
+                            <p style={{ textAlign: 'center', marginBottom: '20px', color: '#666', maxWidth: '80%' }}>
+                              Este gráfico mostra o percentual de docentes envolvidos em atividades de extensão, calculado como o total de docentes participantes dividido pelo total de docentes da universidade.
+                            </p>
+                            <SemiCircleChart percentage={data!.docentes.percentual} label="Docente" color="#FFC107" size={400} value={data!.docentes.envolvidos} total={data!.docentes.total} showLegend={true} />
+                          </div>
+                        )} style={{ cursor: 'pointer' }}>
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M15 3V5H19.59L14.29 10.29L15.71 11.71L21 6.41V11H23V3H15Z" fill="#333" />
+                            <path d="M3 15V21H9V19H4.41L9.71 13.71L8.29 12.29L3 17.59V13H1V15H3Z" fill="#333" />
+                            <path d="M21 13V17.59L15.71 12.29L14.29 13.71L19.59 19H15V21H23V13H21Z" fill="#333" />
+                            <path d="M9 3H1V11H3V6.41L8.29 11.71L9.71 10.29L4.41 5H9V3Z" fill="#333" />
+                          </svg>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  {/*Coordenadores */}
+                  <div id="chart-docentes-coordenadores" className="bar-chart-container" style={{ margin: 0, flex: 1, height: '250px', position: 'relative' }}>
+                    {isLoading ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', height: '100%' }}>
+                        <SkeletonText width="80%" height="24px" />
+                        <div style={{ margin: '20px 0' }}>
+                          <SkeletonSemiCircle size={200} />
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="chart-header" style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '20px' }}>
+                          <h3 style={{ maxWidth: '80%' }}>Percentual de coordenadores docentes</h3>
+                          <ChartActionMenu chartId="chart-docentes-coordenadores" title="Percentual Coordenadores Docentes" onViewDetails={() => fetchDetails("Detalhes: Percentual de Coordenadores Docentes", (item) => item.numero_coordenadores_docentes === 1, [{ key: 'numero_coordenadores_docentes', label: 'Coordenadores Docentes' }])} />
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                          <SemiCircleChart percentage={data!.docentes.percentualCoordenadores} label="Docente" color="#FFC107" size={200} value={data!.docentes.coordenadores} total={data!.docentes.total} />
+                        </div>
+                        <div className="expand-icon-container" onClick={() => openModal(
+                          <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <h3 style={{ marginBottom: '20px', fontFamily: 'Manrope', fontWeight: 800, color: '#333' }}>Percentual de coordenadores docentes</h3>
+                            <p style={{ textAlign: 'center', marginBottom: '20px', color: '#666', maxWidth: '80%' }}>
+                              Este gráfico mostra o percentual de docentes que coordenam atividades de extensão, calculado como o total de coordenadores dividido pelo total de docentes.
+                            </p>
+                            <SemiCircleChart percentage={data!.docentes.percentualCoordenadores} label="Docente" color="#FFC107" size={400} value={data!.docentes.coordenadores} total={data!.docentes.total} showLegend={true} />
+                          </div>
+                        )} style={{ cursor: 'pointer' }}>
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M15 3V5H19.59L14.29 10.29L15.71 11.71L21 6.41V11H23V3H15Z" fill="#333" />
+                            <path d="M3 15V21H9V19H4.41L9.71 13.71L8.29 12.29L3 17.59V13H1V15H3Z" fill="#333" />
+                            <path d="M21 13V17.59L15.71 12.29L14.29 13.71L19.59 19H15V21H23V13H21Z" fill="#333" />
+                            <path d="M9 3H1V11H3V6.41L8.29 11.71L9.71 10.29L4.41 5H9V3Z" fill="#333" />
+                          </svg>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+                {/* Cards */}
+                <div className="stats-row-horizontal" style={{ marginBottom: '40px' }}>
+                  {isLoading ? (
+                    <>
+                      <SkeletonCard />
+                      <SkeletonCard />
+                      <SkeletonCard />
+                    </>
+                  ) : (
+                    <>
+                      <StatCard value={data!.docentes.ativos} title="Total de Docentes na Universidade" color="#278837" borderColor="#278837" />
+                      <StatCard value={data!.docentes.envolvidos} title="Docentes envolvidos em ações de extensão" color="#0D3887" borderColor="#0D3887" />
+                      <StatCard value={data!.docentes.coordenadores} title="N° de Docentes Coordenadores de Projetos" color="#0D3887" borderColor="#0D3887" />
+                    </>
+                  )}
                 </div>
               </div>
             </div>
-
-            {/* Cards */}
-            <div className="stats-row-horizontal" style={{ marginBottom: '40px' }}>
-              <StatCard value={data.discentes.total} title="Total de Discentes na Universidade" color="#0D3887" borderColor="#0D3887" />
-              <StatCard value={data.discentes.envolvidos} title="Discentes envolvidos em ações de extensão" color="#0D3887" borderColor="#0D3887" />
-              <StatCard value={data.discentes.bolsistas} title="N° de Discentes Bolsistas" color="#0D3887" borderColor="#0D3887" />
-            </div>
           </div>
-
-          {/* Docentes */}
-          <div className="section-header-pill">
-            <div className="icon-circle">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M20 17V19H4V17H20ZM20 5V15H4V5H20ZM22 3H2V21H22V3ZM15 7H6V9H15V7ZM15 11H6V13H15V11Z" fill="white" />
-              </svg>
-            </div>
-            Docentes
-          </div>
-
-          <div className="stats-section-vertical">
-            <div style={{ display: 'flex', gap: '30px', width: '100%', marginBottom: '30px' }}>
-              {/*Docent Envolvidos */}
-              <div id="chart-docentes-percentual" className="bar-chart-container" style={{ margin: 0, flex: 1, position: 'relative' }}>
-                <div className="chart-header" style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '20px' }}>
-                  <h3 style={{ maxWidth: '80%' }}>Percentual de docentes envolvidos em atividades de extensão</h3>
-                  <ChartActionMenu chartId="chart-docentes-percentual" title="Percentual Docentes" onViewDetails={() => fetchDetails("Detalhes: Percentual de Docentes", (item) => (item.numero_docentes_envolvidos || 0) > 0, [{ key: 'numero_docentes_envolvidos', label: 'Docentes Envolvidos' }])} />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                  <SemiCircleChart percentage={data.docentes.percentual} label="Docente" color="#FFC107" size={200} value={data.docentes.envolvidos} total={data.docentes.total} />
-                </div>
-                <div className="expand-icon-container" onClick={() => openModal(
-                  <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <h3 style={{ marginBottom: '20px', fontFamily: 'Manrope', fontWeight: 800, color: '#333' }}>Percentual de docentes envolvidos em atividades de extensão</h3>
-                    <p style={{ textAlign: 'center', marginBottom: '20px', color: '#666', maxWidth: '80%' }}>
-                      Este gráfico mostra o percentual de docentes envolvidos em atividades de extensão, calculado como o total de docentes participantes dividido pelo total de docentes da universidade.
-                    </p>
-                    <SemiCircleChart percentage={data.docentes.percentual} label="Docente" color="#FFC107" size={400} value={data.docentes.envolvidos} total={data.docentes.total} showLegend={true} />
-                  </div>
-                )} style={{ cursor: 'pointer' }}>
+          {/* ═══════════════════════════════════════════════════════════════
+              SEÇÃO: Indicadores de TAEs (Técnicos Administrativos)
+              ═══════════════════════════════════════════════════════════════ */}
+          <div className="section-wrapper">
+            <div className="section-divider section-divider--taes">
+              <div className="section-divider-label">
+                <div className="icon-circle">
+                  {/* Ícone: Crachá/Badge - representa funcionários */}
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M15 3V5H19.59L14.29 10.29L15.71 11.71L21 6.41V11H23V3H15Z" fill="#333" />
-                    <path d="M3 15V21H9V19H4.41L9.71 13.71L8.29 12.29L3 17.59V13H1V15H3Z" fill="#333" />
-                    <path d="M21 13V17.59L15.71 12.29L14.29 13.71L19.59 19H15V21H23V13H21Z" fill="#333" />
-                    <path d="M9 3H1V11H3V6.41L8.29 11.71L9.71 10.29L4.41 5H9V3Z" fill="#333" />
+                    <rect x="4" y="4" width="16" height="18" rx="2" stroke="white" strokeWidth="2" fill="none" />
+                    <circle cx="12" cy="10" r="3" stroke="white" strokeWidth="1.5" fill="none" />
+                    <path d="M7 18C7 15.5 9 14 12 14C15 14 17 15.5 17 18" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+                    <path d="M9 2V4M15 2V4" stroke="white" strokeWidth="2" strokeLinecap="round" />
                   </svg>
                 </div>
-              </div>
-              {/*Coordenadores */}
-              <div id="chart-docentes-coordenadores" className="bar-chart-container" style={{ margin: 0, flex: 1, position: 'relative' }}>
-                <div className="chart-header" style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '20px' }}>
-                  <h3 style={{ maxWidth: '80%' }}>Percentual de coordenadores docentes</h3>
-                  <ChartActionMenu chartId="chart-docentes-coordenadores" title="Percentual Coordenadores Docentes" onViewDetails={() => fetchDetails("Detalhes: Percentual de Coordenadores Docentes", (item) => item.numero_coordenadores_docentes === 1, [{ key: 'numero_coordenadores_docentes', label: 'Coordenadores Docentes' }])} />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                  <SemiCircleChart percentage={data.docentes.percentualCoordenadores} label="Docente" color="#FFC107" size={200} value={data.docentes.coordenadores} total={data.docentes.total} />
-                </div>
-                <div className="expand-icon-container" onClick={() => openModal(
-                  <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <h3 style={{ marginBottom: '20px', fontFamily: 'Manrope', fontWeight: 800, color: '#333' }}>Percentual de coordenadores docentes</h3>
-                    <p style={{ textAlign: 'center', marginBottom: '20px', color: '#666', maxWidth: '80%' }}>
-                      Este gráfico mostra o percentual de docentes que coordenam atividades de extensão, calculado como o total de coordenadores dividido pelo total de docentes.
-                    </p>
-                    <SemiCircleChart percentage={data.docentes.percentualCoordenadores} label="Docente" color="#FFC107" size={400} value={data.docentes.coordenadores} total={data.docentes.total} showLegend={true} />
-                  </div>
-                )} style={{ cursor: 'pointer' }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M15 3V5H19.59L14.29 10.29L15.71 11.71L21 6.41V11H23V3H15Z" fill="#333" />
-                    <path d="M3 15V21H9V19H4.41L9.71 13.71L8.29 12.29L3 17.59V13H1V15H3Z" fill="#333" />
-                    <path d="M21 13V17.59L15.71 12.29L14.29 13.71L19.59 19H15V21H23V13H21Z" fill="#333" />
-                    <path d="M9 3H1V11H3V6.41L8.29 11.71L9.71 10.29L4.41 5H9V3Z" fill="#333" />
-                  </svg>
-                </div>
+                Indicadores de TAEs
               </div>
             </div>
-            {/* Cards */}
-            <div className="stats-row-horizontal" style={{ marginBottom: '40px' }}>
-              <StatCard value={data.docentes.total} title="Total de Docentes na Universidade" color="#0D3887" borderColor="#0D3887" />
-              <StatCard value={data.docentes.envolvidos} title="Docentes envolvidos em ações de extensão" color="#0D3887" borderColor="#0D3887" />
-              <StatCard value={data.docentes.coordenadores} title="N° de Docentes Coordenadores de Projetos" color="#0D3887" borderColor="#0D3887" />
+            <div className="section-container">
+
+              <div className="stats-section-vertical">
+                <div style={{ display: 'flex', gap: '30px', width: '100%', marginBottom: '30px' }}>
+                  {/*TAe nvolvidos */}
+                  <div id="chart-taes-percentual" className="bar-chart-container" style={{ margin: 0, flex: 1, height: '250px', position: 'relative' }}>
+                    {isLoading ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', height: '100%' }}>
+                        <SkeletonText width="80%" height="24px" />
+                        <div style={{ margin: '20px 0' }}>
+                          <SkeletonSemiCircle size={200} />
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="chart-header" style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '20px' }}>
+                          <h3 style={{ maxWidth: '80%' }}>Percentual TAEs envolvidos em atividades de extensão</h3>
+                          <ChartActionMenu chartId="chart-taes-percentual" title="Percentual TAEs" onViewDetails={() => fetchDetails("Detalhes: Percentual de TAEs", (item) => (item.total_tecnicos_envolvidos || 0) > 0, [{ key: 'total_tecnicos_envolvidos', label: 'TAEs Envolvidos' }])} />
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                          <SemiCircleChart percentage={data!.taes.percentual} label="TAEs" color="#FFC107" size={200} value={data!.taes.envolvidos} total={data!.taes.total} />
+                        </div>
+                        <div className="expand-icon-container" onClick={() => openModal(
+                          <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <h3 style={{ marginBottom: '20px', fontFamily: 'Manrope', fontWeight: 800, color: '#333' }}>Percentual TAEs envolvidos em atividades de extensão</h3>
+                            <p style={{ textAlign: 'center', marginBottom: '20px', color: '#666', maxWidth: '80%' }}>
+                              Este gráfico mostra o percentual de TAEs envolvidos em atividades de extensão, calculado como o total de TAEs participantes dividido pelo total de TAEs da universidade.
+                            </p>
+                            <SemiCircleChart percentage={data!.taes.percentual} label="TAEs" color="#FFC107" size={400} value={data!.taes.envolvidos} total={data!.taes.total} showLegend={true} />
+                          </div>
+                        )} style={{ cursor: 'pointer' }}>
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M15 3V5H19.59L14.29 10.29L15.71 11.71L21 6.41V11H23V3H15Z" fill="#333" />
+                            <path d="M3 15V21H9V19H4.41L9.71 13.71L8.29 12.29L3 17.59V13H1V15H3Z" fill="#333" />
+                            <path d="M21 13V17.59L15.71 12.29L14.29 13.71L19.59 19H15V21H23V13H21Z" fill="#333" />
+                            <path d="M9 3H1V11H3V6.41L8.29 11.71L9.71 10.29L4.41 5H9V3Z" fill="#333" />
+                          </svg>
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* tAE Coordenadores */}
+                  <div id="chart-taes-coordenadores" className="bar-chart-container" style={{ margin: 0, flex: 1, height: '250px', position: 'relative' }}>
+                    {isLoading ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', height: '100%' }}>
+                        <SkeletonText width="80%" height="24px" />
+                        <div style={{ margin: '20px 0' }}>
+                          <SkeletonSemiCircle size={200} />
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="chart-header" style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '20px' }}>
+                          <h3 style={{ maxWidth: '80%' }}>Percentual TAEs coordenadores</h3>
+                          <ChartActionMenu chartId="chart-taes-coordenadores" title="Percentual Coordenadores TAEs" onViewDetails={() => fetchDetails("Detalhes: Percentual de Coordenadores TAEs", (item) => item.numero_coordenadores_taes === 1, [{ key: 'numero_coordenadores_taes', label: 'Coordenadores TAEs' }])} />
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                          <SemiCircleChart percentage={data!.taes.percentualCoordenadores} label="Docente" color="#FFC107" size={200} value={data!.taes.coordenadores} total={data!.taes.total} />
+                        </div>
+                        <div className="expand-icon-container" onClick={() => openModal(
+                          <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <h3 style={{ marginBottom: '20px', fontFamily: 'Manrope', fontWeight: 800, color: '#333' }}>Percentual TAEs coordenadores</h3>
+                            <p style={{ textAlign: 'center', marginBottom: '20px', color: '#666', maxWidth: '80%' }}>
+                              Este gráfico mostra o percentual de TAEs que coordenam atividades de extensão, calculado como o total de coordenadores dividido pelo total de TAEs.
+                            </p>
+                            <SemiCircleChart percentage={data!.taes.percentualCoordenadores} label="Docente" color="#FFC107" size={400} value={data!.taes.coordenadores} total={data!.taes.total} showLegend={true} />
+                          </div>
+                        )} style={{ cursor: 'pointer' }}>
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M15 3V5H19.59L14.29 10.29L15.71 11.71L21 6.41V11H23V3H15Z" fill="#333" />
+                            <path d="M3 15V21H9V19H4.41L9.71 13.71L8.29 12.29L3 17.59V13H1V15H3Z" fill="#333" />
+                            <path d="M21 13V17.59L15.71 12.29L14.29 13.71L19.59 19H15V21H23V13H21Z" fill="#333" />
+                            <path d="M9 3H1V11H3V6.41L8.29 11.71L9.71 10.29L4.41 5H9V3Z" fill="#333" />
+                          </svg>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Cards */}
+                <div className="stats-row-horizontal" style={{ marginBottom: '40px' }}>
+                  {isLoading ? (
+                    <>
+                      <SkeletonCard />
+                      <SkeletonCard />
+                      <SkeletonCard />
+                    </>
+                  ) : (
+                    <>
+                      <StatCard value={data!.taes.ativos} title="Total de TAEs na Universidade" color="#278837" borderColor="#278837" />
+                      <StatCard value={data!.taes.envolvidos} title="TAEs envolvidos em ações de extensão" color="#0D3887" borderColor="#0D3887" />
+                      <StatCard value={data!.taes.coordenadores} title="N° de TAEs coordenadores" color="#0D3887" borderColor="#0D3887" />
+                    </>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
-          {/*TAEs */}
-          <div className="section-header-pill">
-            <div className="icon-circle">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M16 11C16 12.6569 14.6569 14 13 14C11.3431 14 10 12.6569 10 11C10 9.34315 11.3431 8 13 8C14.6569 8 16 9.34315 16 11Z" fill="white" />
-                <path d="M18 11C18 12.6569 16.6569 14 15 14C14.7716 14 14.5513 13.9729 14.3396 13.922C14.7563 13.0602 15 12.0729 15 11C15 9.9271 14.7563 8.9398 14.3396 8.07798C14.5513 8.02708 14.7716 8 15 8C16.6569 8 18 9.34315 18 11Z" fill="white" />
-                <path d="M8 11C8 12.6569 6.65685 14 5 14C3.34315 14 2 12.6569 2 11C2 9.34315 3.34315 8 5 8C6.65685 8 8 9.34315 8 11Z" fill="white" />
-                <path d="M13 15C10.3333 15 5 16.34 5 19V21H21V19C21 16.34 15.6667 15 13 15Z" fill="white" />
-              </svg>
-            </div>
-            TAEs
-          </div>
-          <div className="stats-section-vertical">
-            <div style={{ display: 'flex', gap: '30px', width: '100%', marginBottom: '30px' }}>
-              {/*TAe nvolvidos */}
-              <div id="chart-taes-percentual" className="bar-chart-container" style={{ margin: 0, flex: 1, position: 'relative' }}>
-                <div className="chart-header" style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '20px' }}>
-                  <h3 style={{ maxWidth: '80%' }}>Percentual TAEs envolvidos em atividades de extensão</h3>
-                  <ChartActionMenu chartId="chart-taes-percentual" title="Percentual TAEs" onViewDetails={() => fetchDetails("Detalhes: Percentual de TAEs", (item) => (item.total_tecnicos_envolvidos || 0) > 0, [{ key: 'total_tecnicos_envolvidos', label: 'TAEs Envolvidos' }])} />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                  <SemiCircleChart percentage={data.taes.percentual} label="TAEs" color="#FFC107" size={200} value={data.taes.envolvidos} total={data.taes.total} />
-                </div>
-                <div className="expand-icon-container" onClick={() => openModal(
-                  <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <h3 style={{ marginBottom: '20px', fontFamily: 'Manrope', fontWeight: 800, color: '#333' }}>Percentual TAEs envolvidos em atividades de extensão</h3>
-                    <p style={{ textAlign: 'center', marginBottom: '20px', color: '#666', maxWidth: '80%' }}>
-                      Este gráfico mostra o percentual de TAEs envolvidos em atividades de extensão, calculado como o total de TAEs participantes dividido pelo total de TAEs da universidade.
-                    </p>
-                    <SemiCircleChart percentage={data.taes.percentual} label="TAEs" color="#FFC107" size={400} value={data.taes.envolvidos} total={data.taes.total} showLegend={true} />
-                  </div>
-                )} style={{ cursor: 'pointer' }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M15 3V5H19.59L14.29 10.29L15.71 11.71L21 6.41V11H23V3H15Z" fill="#333" />
-                    <path d="M3 15V21H9V19H4.41L9.71 13.71L8.29 12.29L3 17.59V13H1V15H3Z" fill="#333" />
-                    <path d="M21 13V17.59L15.71 12.29L14.29 13.71L19.59 19H15V21H23V13H21Z" fill="#333" />
-                    <path d="M9 3H1V11H3V6.41L8.29 11.71L9.71 10.29L4.41 5H9V3Z" fill="#333" />
-                  </svg>
-                </div>
-              </div>
-
-              {/* tAE Coordenadores */}
-              <div id="chart-taes-coordenadores" className="bar-chart-container" style={{ margin: 0, flex: 1, position: 'relative' }}>
-                <div className="chart-header" style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '20px' }}>
-                  <h3 style={{ maxWidth: '80%' }}>Percentual TAEs coordenadores</h3>
-                  <ChartActionMenu chartId="chart-taes-coordenadores" title="Percentual Coordenadores TAEs" onViewDetails={() => fetchDetails("Detalhes: Percentual de Coordenadores TAEs", (item) => item.numero_coordenadores_taes === 1, [{ key: 'numero_coordenadores_taes', label: 'Coordenadores TAEs' }])} />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                  <SemiCircleChart percentage={data.taes.percentualCoordenadores} label="Docente" color="#FFC107" size={200} value={data.taes.coordenadores} total={data.taes.total} />
-                </div>
-                <div className="expand-icon-container" onClick={() => openModal(
-                  <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <h3 style={{ marginBottom: '20px', fontFamily: 'Manrope', fontWeight: 800, color: '#333' }}>Percentual TAEs coordenadores</h3>
-                    <p style={{ textAlign: 'center', marginBottom: '20px', color: '#666', maxWidth: '80%' }}>
-                      Este gráfico mostra o percentual de TAEs que coordenam atividades de extensão, calculado como o total de coordenadores dividido pelo total de TAEs.
-                    </p>
-                    <SemiCircleChart percentage={data.taes.percentualCoordenadores} label="Docente" color="#FFC107" size={400} value={data.taes.coordenadores} total={data.taes.total} showLegend={true} />
-                  </div>
-                )} style={{ cursor: 'pointer' }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M15 3V5H19.59L14.29 10.29L15.71 11.71L21 6.41V11H23V3H15Z" fill="#333" />
-                    <path d="M3 15V21H9V19H4.41L9.71 13.71L8.29 12.29L3 17.59V13H1V15H3Z" fill="#333" />
-                    <path d="M21 13V17.59L15.71 12.29L14.29 13.71L19.59 19H15V21H23V13H21Z" fill="#333" />
-                    <path d="M9 3H1V11H3V6.41L8.29 11.71L9.71 10.29L4.41 5H9V3Z" fill="#333" />
-                  </svg>
-                </div>
-              </div>
-
-            </div>
-
-            {/* Cards */}
-            <div className="stats-row-horizontal" style={{ marginBottom: '40px' }}>
-              <StatCard value={data.taes.total} title="Total de TAEs na Universidade" color="#0D3887" borderColor="#0D3887" />
-              <StatCard value={data.taes.envolvidos} title="TAEs envolvidos em ações de extensão" color="#0D3887" borderColor="#0D3887" />
-              <StatCard value={data.taes.coordenadores} title="N° de TAEs coordenadores" color="#0D3887" borderColor="#0D3887" />
-            </div>
-          </div>
-
-
+          {/* ═══ FIM DAS SEÇÕES ═══ */}
           {lastUpdate && (
-            <div className="update-badge">
+            <div className="update-badge" style={{ marginTop: '30px' }}>
               Atualizado em: {lastUpdate}
             </div>
           )}
-
-
         </div>
 
         {/* Sidebar */}
         <div className="dashboard-sidebar">
           <FilterSidebar filters={filters} onFilterChange={handleFilterChange} options={filterOptions} />
         </div>
-
       </div>
 
       <Footer />
