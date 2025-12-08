@@ -9,6 +9,12 @@ import foto3 from "../assets/foto3.png";
 
 const Sobre: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  // Reset image loading state when slide changes
+  useEffect(() => {
+    setImageLoaded(false);
+  }, [currentSlide]);
 
   const teamMembers = [
     {
@@ -41,12 +47,7 @@ const Sobre: React.FC = () => {
     });
   }, []);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % teamMembers.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [teamMembers.length]);
+
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % teamMembers.length);
@@ -128,11 +129,31 @@ const Sobre: React.FC = () => {
                 text={`${teamMembers[currentSlide].name} - ${teamMembers[currentSlide].role}`}
                 position="top"
               >
-                <img
-                  src={teamMembers[currentSlide].image}
-                  alt={`Foto de ${teamMembers[currentSlide].name}, ${teamMembers[currentSlide].role}`}
-                  className="team-avatar"
-                />
+                <>
+                  {!imageLoaded && (
+                    <div
+                      className="team-avatar"
+                      style={{
+                        backgroundColor: '#f0f0f0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="2">
+                        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                      </svg>
+                    </div>
+                  )}
+                  <img
+                    key={currentSlide}
+                    src={teamMembers[currentSlide].image}
+                    alt={`Foto de ${teamMembers[currentSlide].name}, ${teamMembers[currentSlide].role}`}
+                    className="team-avatar"
+                    onLoad={() => setImageLoaded(true)}
+                    style={{ display: imageLoaded ? 'block' : 'none' }}
+                  />
+                </>
               </Tooltip>
 
               <h3 className="team-name">{teamMembers[currentSlide].name}</h3>
