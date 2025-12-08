@@ -9,7 +9,17 @@ const Footer: React.FC = () => {
         <p className="footer-content">Milena Soares Ferreira - Estudante do curso de Eng. Software | milenasf.aluno@unipampa.edu.br</p>
         <p className="footer-content">Kauã Jardim Dias - Estudante do curso Ciência da Computação | kauadias.aluno@unipampa.edu.br </p>
         <p className="footer-content">Aline Vieira de Mello - Docente | alinemello@unipampa.edu.br </p>
-        <p className='copyright'>© 2025 | Indicadores da Extensão </p>
+        <p className='copyright'>2025 | Indicadores da Extensão </p>
+        <div className="footer-license">
+          <a
+            rel="license"
+            href="https://creativecommons.org/licenses/by-nc-sa/4.0/"
+            target="_blank"
+            title="Licença Creative Commons BY-NC-SA 4.0"
+          >
+            <span className="license-text">Creative Commons</span>
+          </a>
+        </div>
       </div>
     </footer>
   );

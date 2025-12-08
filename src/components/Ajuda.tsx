@@ -95,7 +95,7 @@ const Ajuda: React.FC = () => {
       title: 'Como saber mais sobre o desenvolvimento do sistema',
       content: (
         <div>
-          <p>Clique no quarto elemento da barra horizontal no topo da página, onde está escrito "Sobre". Navegue para baixo, visualizando as informações sobre o sistema, seu objetivo, desenvolvimento e equipe responsável.</p>
+          <p>Clique no terceiro elemento da barra horizontal no topo da página, onde está escrito "Sobre". Navegue para baixo, visualizando as informações sobre o sistema, seu objetivo, desenvolvimento e equipe responsável.</p>
           <img src={sobreGif} alt='Vídeo de demonstração da operação descrita acima' width="840" height="auto"></img>
         </div>
       ),

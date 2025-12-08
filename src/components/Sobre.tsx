@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useSpeech } from "react-text-to-speech";
+import Tooltip from "./Tooltip";
 import Footer from "../components/Footer";
 import "../css/Sobre.css";
 import logoSobre from "../assets/LogoHomePagSobre.png";
@@ -10,13 +10,11 @@ import foto3 from "../assets/foto3.png";
 const Sobre: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
-
   const teamMembers = [
     {
       name: "Milena Soares Ferreira",
       role: "Desenvolvedora",
       desc1: "Discente de Engenharia de Software",
-      desc2: "Bolsista de Gestão PROEC",
       image: foto1
     },
     {
@@ -50,10 +48,6 @@ const Sobre: React.FC = () => {
     setCurrentSlide((prev) => (prev - 1 + teamMembers.length) % teamMembers.length);
   };
 
-  const textToRead = "Sobre o sistema. O sistema foi desenvolvido para possibilitar o acesso aos dados da extensão universitária de forma facilitada e livre. Objetivo. Apoiar tomada de decisões e ampliar a visibilidade das atividades de extensão através da facilitação do acesso e análise desses dados por meio de gráficos e tabelas geradas de maneira automatizada. Desenvolvimento. O sistema foi idealizado e implementado por Milena Ferreira e Kauã Dias, sob a tutoria da docente Aline de Mello.";
-
-  const { speechStatus, start, stop } = useSpeech({ text: textToRead, lang: "pt-BR" });
-
   return (
     <div className="sobre-wrapper">
       <div className="sobre-header-container">
@@ -84,27 +78,11 @@ const Sobre: React.FC = () => {
       </div>
       <div className="sobre-main-content">
         <div className="sobre-image-container">
-          <img src={logoSobre} alt="Sobre o Sistema Illustration" className="sobre-illustration" />
+          <Tooltip text="Ilustração Sobre o Sistema" position="bottom">
+            <img src={logoSobre} alt="Sobre o Sistema Illustration" className="sobre-illustration" />
+          </Tooltip>
         </div>
         <div className="sobre-text-content">
-          <div className="tts-container">
-            <button
-              className={`tts-button ${speechStatus === "started" ? "active" : ""}`}
-              onClick={speechStatus === "started" ? stop : start}
-              aria-label={speechStatus === "started" ? "Parar leitura do texto" : "Ouvir o texto sobre o sistema"}
-              title={speechStatus === "started" ? "Parar leitura" : "Ouvir texto"}
-            >
-              {speechStatus === "started" ? (
-                <>
-                  <span aria-hidden="true">🔇</span> Parar Leitura
-                </>
-              ) : (
-                <>
-                  <span aria-hidden="true">🔊</span> Ouvir Texto
-                </>
-              )}
-            </button>
-          </div>
           <div className="text-block">
             <h3 className="text-title">Sobre o sistema</h3>
             <p className="text-body">
@@ -138,13 +116,15 @@ const Sobre: React.FC = () => {
 
           <div className="carousel-slide">
             <div className="team-card">
-              <div
-                className="team-avatar"
-                style={{ backgroundImage: `url(${teamMembers[currentSlide].image})` }}
-                title={`${teamMembers[currentSlide].name} - ${teamMembers[currentSlide].role}`}
-                role="img"
-                aria-label={`Foto de ${teamMembers[currentSlide].name}, ${teamMembers[currentSlide].role}`}
-              ></div>
+              <Tooltip text={`${teamMembers[currentSlide].name} - ${teamMembers[currentSlide].role}`} position="top">
+                <div
+                  className="team-avatar"
+                  style={{ backgroundImage: `url(${teamMembers[currentSlide].image})` }}
+                  title="" // Remove native tooltip to avoid conflict
+                  role="img"
+                  aria-label={`Foto de ${teamMembers[currentSlide].name}, ${teamMembers[currentSlide].role}`}
+                ></div>
+              </Tooltip>
               <h3 className="team-name">{teamMembers[currentSlide].name}</h3>
               <p className="team-role">{teamMembers[currentSlide].role}</p>
               <p className="team-desc">{teamMembers[currentSlide].desc1}</p>

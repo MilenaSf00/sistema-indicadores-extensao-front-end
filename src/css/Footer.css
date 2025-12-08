@@ -13,7 +13,7 @@ body {
   margin-top: 40px;
 }
 
-.footer-title{
+.footer-title {
   margin-left: 50px;
   margin-top: -20px;
   margin-bottom: 20px;
@@ -23,10 +23,10 @@ body {
   line-height: 30px;
   color: #FFF1F1;
   left: 100px;
-  white-space: pre-line; 
+  white-space: pre-line;
 }
 
-.footer-content{
+.footer-content {
   margin-left: 50px;
   margin-top: 0px;
   font-family: 'Manrope', sans-serif;
@@ -35,10 +35,10 @@ body {
   line-height: 10px;
   color: #FFF1F1;
   left: 100px;
-  white-space: pre-line; 
+  white-space: pre-line;
 }
 
-.copyright{
+.copyright {
   margin-left: 50px;
   margin-bottom: -10px;
   font-family: 'Manrope', sans-serif;
@@ -46,5 +46,13 @@ body {
   font-size: 20px;
   color: #FFF1F1;
   left: 100px;
-  white-space: pre-line; 
+  white-space: pre-line;
+}
+
+.cc-icon {
+  width: 20px;
+  /* ajuste aqui o tamanho desejado */
+  height: 20px;
+  margin-right: 6px;
+  /* opcional: espaço entre ícones */
 }

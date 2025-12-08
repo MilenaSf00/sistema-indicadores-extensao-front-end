@@ -468,10 +468,7 @@ body {
   border: 1px solid #ffcdd2;
 }
 
-75% {
-  transform: translateX(5px);
-}
-}
+
 
 /* SHAKE ANIMATION FOR CARD */
 .shake {
