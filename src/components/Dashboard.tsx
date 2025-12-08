@@ -488,6 +488,8 @@ const Dashboard: React.FC = () => {
       }
 
       pdf.save('dashboard-indicadores.pdf');
+
+      toast.update(toastId, { render: 'Download PDF concluído!', type: 'success', isLoading: false, autoClose: 3000 });
     } catch (error) {
       console.error('Erro ao gerar PDF:', error);
       toast.update(toastId, { render: 'Erro ao exportar PDF', type: 'error', isLoading: false, autoClose: 4000 });
