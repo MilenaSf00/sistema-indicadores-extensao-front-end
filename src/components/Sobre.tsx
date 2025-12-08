@@ -116,15 +116,18 @@ const Sobre: React.FC = () => {
 
           <div className="carousel-slide">
             <div className="team-card">
-              <Tooltip text={`${teamMembers[currentSlide].name} - ${teamMembers[currentSlide].role}`} position="top">
-                <div
+              <Tooltip
+                text={`${teamMembers[currentSlide].name} - ${teamMembers[currentSlide].role}`}
+                position="top"
+              >
+                <img
+                  src={teamMembers[currentSlide].image}
+                  alt={`Foto de ${teamMembers[currentSlide].name}, ${teamMembers[currentSlide].role}`}
                   className="team-avatar"
-                  style={{ backgroundImage: `url(${teamMembers[currentSlide].image})` }}
-                  title="" // Remove native tooltip to avoid conflict
-                  role="img"
-                  aria-label={`Foto de ${teamMembers[currentSlide].name}, ${teamMembers[currentSlide].role}`}
-                ></div>
+                  loading="lazy"
+                />
               </Tooltip>
+
               <h3 className="team-name">{teamMembers[currentSlide].name}</h3>
               <p className="team-role">{teamMembers[currentSlide].role}</p>
               <p className="team-desc">{teamMembers[currentSlide].desc1}</p>
