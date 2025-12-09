@@ -548,31 +548,31 @@ const Dashboard: React.FC = () => {
             { name: 'TAEs', value: apiData.total_tecnicos_envolvidos, color: '#E64A19' },
             { name: 'Comunidade Externa', value: apiData.pessoas_comunidade_externa, color: '#F4511E' },
           ],
-          totalPessoas: apiData.pessoas_comunidade_externa,
+          totalPessoas: apiData.numero_pessoas_total_comunidade_externa || apiData.pessoas_comunidade_externa,
           totalEnvolvidos: apiData.numero_discentes_envolvidos + apiData.numero_docentes_envolvidos + apiData.total_tecnicos_envolvidos + apiData.pessoas_comunidade_externa,
           acoesPorModalidade: acoesPorModalidade,
           acoesPorArea: acoesPorArea,
           discentes: {
             percentual: apiData.percentual_discentes,
             total: apiData.total_matriculas_graduacao,
-            envolvidos: apiData.numero_discentes_envolvidos,
+            envolvidos: apiData.discentes_ativos_envolvidos_em_extensao || apiData.numero_discentes_envolvidos,
             bolsistas: apiData.numero_discentes_bolsistas
           },
           docentes: {
             percentual: apiData.percentual_docentes,
             percentualCoordenadores: apiData.percentual_coordenadores_docentes,
-            total: apiData.total_docentes,
-            envolvidos: apiData.numero_docentes_envolvidos,
+            total: apiData.ativo_docentes,
+            envolvidos: apiData.docentes_ativos_envolvidos_em_extensao || apiData.numero_docentes_envolvidos,
             coordenadores: apiData.numero_coordenadores_docentes,
-            ativos: apiData.ativo_docentes || apiData.total_docentes
+            ativos: apiData.ativo_docentes || apiData.ativo_docentes
           },
           taes: {
-            percentual: apiData.percentual_taes || (apiData.total_taes ? (apiData.total_tecnicos_envolvidos / apiData.total_taes) * 100 : 0),
+            percentual: apiData.percentual_taes,
             percentualCoordenadores: apiData.percentual_coordenadores_taes,
-            total: apiData.total_taes,
-            envolvidos: apiData.total_tecnicos_envolvidos,
+            total: apiData.ativo_taes,
+            envolvidos: apiData.taes_ativos_envolvidos_em_extensao,
             coordenadores: apiData.numero_coordenadores_taes,
-            ativos: apiData.ativo_taes || apiData.total_taes
+            ativos: apiData.ativo_taes || apiData.ativo_taes
           },
           equipeExecutora: {
             data: [

@@ -124,6 +124,16 @@ export interface IndicatorsResponse {
     percentual_taes: number;
     total_pessoas_envolvidas: number;
     pessoas_comunidade_externa: number;
+
+    ativo_docentes: number;
+    ativo_taes: number;
+
+
+    // Campos para mapeamento correto dos gráficos
+    discentes_ativos_envolvidos_em_extensao: number;
+    taes_ativos_envolvidos_em_extensao: number;
+    docentes_ativos_envolvidos_em_extensao: number;
+    numero_pessoas_total_comunidade_externa: number;
     [key: string]: any;
 }
 
