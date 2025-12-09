@@ -287,9 +287,9 @@ export const StatCard: React.FC<StatCardProps> = ({
 }) => {
     const badgeStyles = {
         active: {
-            backgroundColor: 'rgba(34, 197, 94, 0.95)',
+            backgroundColor: 'rgba(13, 61, 31, 0.95)',
             color: 'white',
-            boxShadow: '0 2px 8px rgba(34, 197, 94, 0.4)',
+            boxShadow: '0 5px 8px rgba(34, 197, 94, 0.4)',
             border: '2px solid rgba(255,255,255,0.9)'
         },
         historical: {
@@ -326,9 +326,9 @@ export const StatCard: React.FC<StatCardProps> = ({
                     position: 'absolute' as const,
                     top: '-12px',
                     right: '10px',
-                    padding: '4px 12px',
+                    padding: '10px 18px',
                     borderRadius: '20px',
-                    fontSize: '10px',
+                    fontSize: '11px',
                     fontWeight: '700',
                     fontFamily: 'Manrope',
                     letterSpacing: '0.3px',
