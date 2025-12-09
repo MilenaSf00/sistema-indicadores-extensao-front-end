@@ -49,10 +49,17 @@ body {
   white-space: pre-line;
 }
 
+
 .cc-icon {
   width: 20px;
   /* ajuste aqui o tamanho desejado */
   height: 20px;
   margin-right: 6px;
   /* opcional: espaço entre ícones */
+}
+
+.footer-license {
+  text-align: center;
+  margin-top: 30px;
+  width: 100%;
 }

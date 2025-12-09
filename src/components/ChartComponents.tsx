@@ -92,7 +92,9 @@ export const CustomPieChart: React.FC<CustomPieChartProps & { animationActive?: 
 // -----------------------
 // SemiCircleChart
 // -----------------------
-import { Legend } from 'recharts';
+// -----------------------
+// SemiCircleChart
+// -----------------------
 
 interface SemiCircleChartProps {
     percentage: number;
@@ -104,15 +106,16 @@ interface SemiCircleChartProps {
     showLegend?: boolean;
 }
 
-export const SemiCircleChart: React.FC<SemiCircleChartProps & { animationActive?: boolean }> = ({
+export const SemiCircleChart: React.FC<SemiCircleChartProps & { animationActive?: boolean, compact?: boolean }> = ({
     percentage = 0,
     label,
     color,
-    size = 200,
+    size = 280,
     value,
     total,
     showLegend = false,
-    animationActive = true
+    animationActive = true,
+    compact = false
 }) => {
     const data = [
         { name: 'Envolvidos', value: Number(percentage.toFixed(1)), color: color, absolute: value, total: total },
@@ -145,37 +148,117 @@ export const SemiCircleChart: React.FC<SemiCircleChartProps & { animationActive?
     };
 
     return (
-        <div style={{ position: 'relative', width: '100%', maxWidth: size, minWidth: 150, minHeight: 100, height: showLegend ? size / 2 + 50 : size / 2 + 20, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <ResponsiveContainer width="100%" aspect={2}>
-                <PieChart>
-                    <Pie
-                        data={data}
-                        cx="50%"
-                        cy="100%"
-                        startAngle={180}
-                        endAngle={0}
-                        innerRadius="70%"
-                        outerRadius="100%"
-                        paddingAngle={0}
-                        dataKey="value"
-                        stroke="none"
-                        isAnimationActive={animationActive}
-                    >
-                        {data.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                    </Pie>
-                    <Tooltip content={<CustomTooltip />} />
-                    {showLegend && <Legend verticalAlign="bottom" height={36} iconType="circle" />}
-                </PieChart>
-            </ResponsiveContainer>
+        <div style={{
+            width: '100%',
+            maxWidth: size,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '8px'
+        }}>
+            {/* Chart Container */}
+            <div style={{
+                width: '100%',
+                position: 'relative'
+            }}>
+                <ResponsiveContainer width="100%" aspect={2}>
+                    <PieChart>
+                        <Pie
+                            data={data}
+                            cx="50%"
+                            cy="100%"
+                            startAngle={180}
+                            endAngle={0}
+                            innerRadius="65%"
+                            outerRadius="100%"
+                            paddingAngle={0}
+                            dataKey="value"
+                            stroke="none"
+                            isAnimationActive={animationActive}
+                        >
+                            {data.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                        </Pie>
+                        <Tooltip content={<CustomTooltip />} />
+                    </PieChart>
+                </ResponsiveContainer>
+            </div>
 
-            <div style={{ position: 'absolute', bottom: showLegend ? '40px' : '10px', left: 0, right: 0, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', pointerEvents: 'none' }}>
-                <div style={{ fontSize: '24px', fontWeight: '800', color: '#333', fontFamily: 'Manrope' }}>
+            {/* Value and Label */}
+            <div style={{
+                textAlign: 'center',
+                marginTop: '-10px'
+            }}>
+                <div style={{
+                    fontSize: compact ? '28px' : '32px',
+                    fontWeight: '800',
+                    color: '#333',
+                    fontFamily: 'Manrope',
+                    lineHeight: 1
+                }}>
                     {(percentage || 0).toLocaleString('pt-BR')}%
                 </div>
-                <div style={{ fontSize: '12px', color: '#888', fontWeight: '600', fontFamily: 'Manrope' }}>{label}</div>
+                <div style={{
+                    fontSize: '14px',
+                    color: '#666',
+                    fontWeight: '600',
+                    fontFamily: 'Manrope',
+                    marginTop: '4px'
+                }}>
+                    {label}
+                </div>
             </div>
+
+            {/* Legend */}
+            {showLegend && (
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    gap: '24px',
+                    marginTop: '12px',
+                    flexWrap: 'wrap'
+                }}>
+                    {data.map((item, idx) => (
+                        <div key={idx} style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            fontSize: '13px',
+                            fontFamily: 'Manrope',
+                            color: '#555'
+                        }}>
+                            <span style={{
+                                width: '12px',
+                                height: '12px',
+                                borderRadius: '50%',
+                                backgroundColor: item.color,
+                                flexShrink: 0
+                            }} />
+                            <span>
+                                {item.name}
+                                {item.absolute !== undefined && (
+                                    <strong style={{ marginLeft: '4px' }}>
+                                        ({item.absolute})
+                                    </strong>
+                                )}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Simple Value Text (if no legend) */}
+            {!showLegend && value !== undefined && total !== undefined && (
+                <div style={{
+                    fontSize: '12px',
+                    color: '#888',
+                    fontFamily: 'Manrope',
+                    marginTop: '4px'
+                }}>
+                    {value.toLocaleString('pt-BR')} de {total.toLocaleString('pt-BR')} {label.toLowerCase()}s
+                </div>
+            )}
         </div>
     );
 };
@@ -189,9 +272,34 @@ interface StatCardProps {
     color?: string;
     borderColor?: string;
     textColor?: string;
+    badge?: string;
+    badgeType?: 'active' | 'historical';
 }
 
-export const StatCard: React.FC<StatCardProps> = ({ value, title, color = '#155BD8', borderColor = '#155BD8', textColor = 'white' }) => {
+export const StatCard: React.FC<StatCardProps> = ({
+    value,
+    title,
+    color = '#155BD8',
+    borderColor = '#155BD8',
+    textColor = 'white',
+    badge,
+    badgeType = 'active'
+}) => {
+    const badgeStyles = {
+        active: {
+            backgroundColor: 'rgba(34, 197, 94, 0.95)',
+            color: 'white',
+            boxShadow: '0 2px 8px rgba(34, 197, 94, 0.4)',
+            border: '2px solid rgba(255,255,255,0.9)'
+        },
+        historical: {
+            backgroundColor: 'rgba(107, 114, 128, 0.9)',
+            color: 'white',
+            boxShadow: 'none',
+            border: '1px solid rgba(255,255,255,0.5)'
+        }
+    };
+
     return (
         <div style={{
             backgroundColor: color,
@@ -210,9 +318,35 @@ export const StatCard: React.FC<StatCardProps> = ({ value, title, color = '#155B
             outline: `5px solid ${borderColor}`,
             boxSizing: 'border-box',
             margin: '5px',
-            flex: 1
+            flex: 1,
+            position: 'relative' as const
         }}>
-            <div style={{ fontSize: '36px', fontWeight: '800', marginBottom: '8px', fontFamily: 'Manrope' }}>{value}</div>
+            {badge && (
+                <div style={{
+                    position: 'absolute' as const,
+                    top: '-12px',
+                    right: '10px',
+                    padding: '4px 12px',
+                    borderRadius: '20px',
+                    fontSize: '10px',
+                    fontWeight: '700',
+                    fontFamily: 'Manrope',
+                    letterSpacing: '0.3px',
+                    textTransform: 'uppercase' as const,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    ...badgeStyles[badgeType]
+                }}>
+                    {badgeType === 'active' && (
+                        <span style={{ fontSize: '8px' }}>●</span>
+                    )}
+                    {badge}
+                </div>
+            )}
+            <div style={{ fontSize: '36px', fontWeight: '800', marginBottom: '8px', fontFamily: 'Manrope' }}>
+                {typeof value === 'number' ? value.toLocaleString('pt-BR') : value}
+            </div>
             <div style={{ fontSize: '13px', fontWeight: '600', lineHeight: '1.3', fontFamily: 'Manrope', maxWidth: '100%' }}>{title}</div>
         </div>
     );
@@ -236,7 +370,7 @@ export const CustomDonutChart: React.FC<CustomDonutChartProps & { animationActiv
                         cx="50%"
                         cy="50%"
                         innerRadius="55%"
-                        outerRadius="80%"
+                        outerRadius="100%"
                         fill="#8884d8"
                         paddingAngle={2}
                         dataKey="value"

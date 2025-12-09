@@ -234,7 +234,7 @@ const Upload: React.FC = () => {
       <div className="upload-card">
         <h2 className="upload-title">Upload de Projetos</h2>
         <p className="upload-description">
-          Envie os arquivos CSV com os dados dos projetos de extensão. O backend vai normalizar automaticamente os cabeçalhos.
+          Envie os arquivos CSV com os dados dos projetos de extensão.
         </p>
 
         {lastUpdate && (

@@ -132,18 +132,23 @@ interface SkeletonSemiCircleProps {
     size?: number;
 }
 
-export const SkeletonSemiCircle: React.FC<SkeletonSemiCircleProps> = ({ size = 200 }) => {
+export const SkeletonSemiCircle: React.FC<SkeletonSemiCircleProps> = ({ size = 280 }) => {
     return (
-        <div
-            style={{
+        <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '12px',
+            width: size
+        }}>
+            {/* Chart skeleton */}
+            <div style={{
                 width: size,
                 height: size / 2,
                 position: 'relative',
                 overflow: 'hidden',
-            }}
-        >
-            <div
-                style={{
+            }}>
+                <div style={{
                     ...skeletonBaseStyle,
                     width: size,
                     height: size,
@@ -151,20 +156,24 @@ export const SkeletonSemiCircle: React.FC<SkeletonSemiCircleProps> = ({ size = 2
                     position: 'absolute',
                     top: 0,
                     left: 0,
-                }}
-            />
-            <div
-                style={{
+                }} />
+                <div style={{
                     position: 'absolute',
                     top: '35%',
                     left: '50%',
                     transform: 'translate(-50%, 0)',
-                    width: size * 0.7,
-                    height: size * 0.7,
+                    width: size * 0.65,
+                    height: size * 0.65,
                     borderRadius: '50%',
                     backgroundColor: '#fff',
-                }}
-            />
+                }} />
+            </div>
+
+            {/* Text skeleton */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                <SkeletonText width="60px" height="28px" />
+                <SkeletonText width="80px" height="14px" />
+            </div>
         </div>
     );
 };

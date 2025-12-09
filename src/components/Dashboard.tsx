@@ -720,7 +720,7 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
               <div className="stats-row-wide" style={{ marginTop: '40px', alignItems: 'stretch' }}>
-                <div id="chart-equipe-executora" className="bar-chart-container" style={{ flex: 2, margin: 0, width: 'auto', height: '420px', position: 'relative' }}>
+                <div id="chart-equipe-executora" className="bar-chart-container" style={{ flex: 2, margin: 0, width: 'auto', height: '480px', position: 'relative' }}>
                   {isLoading ? (
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', width: '100%', height: '100%' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -729,7 +729,7 @@ const Dashboard: React.FC = () => {
                         <SkeletonText width="150px" />
                         <SkeletonText width="150px" />
                       </div>
-                      <SkeletonCircleChart size={280} isDonut={true} />
+                      <SkeletonCircleChart size={350} isDonut={true} />
                     </div>
                   ) : (
                     <div className="bar-chart-content">
@@ -738,7 +738,6 @@ const Dashboard: React.FC = () => {
                         <ChartActionMenu
                           chartId="chart-equipe-executora"
                           title="Equipe Executora"
-
                         />
                       </div>
                       <div className="row-body" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
@@ -753,7 +752,7 @@ const Dashboard: React.FC = () => {
                         <div className="donut-chart-wrapper" style={{ marginRight: '50px' }}>
                           <CustomDonutChart
                             data={data!.equipeExecutora.data}
-                            size={280}
+                            size={350}
                             animationActive={!isGeneratingPDF}
                           />
                         </div>
@@ -888,7 +887,7 @@ const Dashboard: React.FC = () => {
             </div>
             <div className="section-container">
               <div className="stats-section-vertical">
-                <div id="chart-discentes-percentual" className="bar-chart-container" style={{ margin: 0, width: '100%', height: '250px', marginBottom: '30px', position: 'relative' }}>
+                <div id="chart-discentes-percentual" className="bar-chart-container" style={{ margin: 0, width: '100%', height: '320px', marginBottom: '30px', position: 'relative' }}>
                   {isLoading ? (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', height: '100%' }}>
                       <SkeletonText width="60%" height="24px" />
@@ -902,7 +901,7 @@ const Dashboard: React.FC = () => {
                         <h3>Percentual de discentes envolvidos em atividades de extensão</h3>
                         <ChartActionMenu chartId="chart-discentes-percentual" title="Percentual Discentes" onViewDetails={() => fetchDetails("Detalhes: Percentual de Discentes", (item) => (item.numero_discentes_envolvidos || 0) > 0, [{ key: 'numero_discentes_envolvidos', label: 'Discentes Envolvidos' }])} />
                       </div>
-                      <SemiCircleChart percentage={data!.discentes.percentual} label="Discente" color="#FFC107" value={data!.discentes.envolvidos} total={data!.discentes.total} animationActive={!isGeneratingPDF} />
+                      <SemiCircleChart percentage={data!.discentes.percentual} label="Discente" color="#FFC107" value={data!.discentes.envolvidos} total={data!.discentes.total} animationActive={!isGeneratingPDF} size={300} />
                       <div className="expand-icon-container" onClick={() => openModal(
                         <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                           <h3 style={{ marginBottom: '20px', fontFamily: 'Manrope', fontWeight: 800, color: '#333' }}>Percentual de discentes envolvidos em atividades de extensão</h3>
@@ -933,9 +932,23 @@ const Dashboard: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      <StatCard value={data!.discentes.total} title="Total de Discentes na Universidade" color="#0D3887" borderColor="#0D3887" />
+                      <StatCard
+                        value={data!.discentes.total}
+                        title="Total de Discentes Graduação na Universidade"
+                        color="#278837"
+                        borderColor="#278837"
+                        badge="Total de Registros atual"
+                        badgeType="active"
+                      />
                       <StatCard value={data!.discentes.envolvidos} title="Discentes envolvidos em ações de extensão" color="#0D3887" borderColor="#0D3887" />
-                      <StatCard value={data!.discentes.bolsistas} title="N° de Discentes Bolsistas" color="#0D3887" borderColor="#0D3887" />
+                      <StatCard
+                        value={data!.discentes.bolsistas}
+                        title="Nº de Discentes Bolsistas"
+                        color="#278837"
+                        borderColor="#278837"
+                        badge="Histórico"
+                        badgeType="historical"
+                      />
                     </>
                   )}
                 </div>
@@ -965,7 +978,7 @@ const Dashboard: React.FC = () => {
               <div className="stats-section-vertical">
                 <div style={{ display: 'flex', gap: '30px', width: '100%', marginBottom: '30px' }}>
                   {/*Docent Envolvidos */}
-                  <div id="chart-docentes-percentual" className="bar-chart-container" style={{ margin: 0, flex: 1, height: '250px', position: 'relative' }}>
+                  <div id="chart-docentes-percentual" className="bar-chart-container" style={{ margin: 0, flex: 1, minHeight: '320px', height: 'auto', position: 'relative' }}>
                     {isLoading ? (
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', height: '100%' }}>
                         <SkeletonText width="80%" height="24px" />
@@ -980,7 +993,7 @@ const Dashboard: React.FC = () => {
                           <ChartActionMenu chartId="chart-docentes-percentual" title="Percentual Docentes" onViewDetails={() => fetchDetails("Detalhes: Percentual de Docentes", (item) => (item.numero_docentes_envolvidos || 0) > 0, [{ key: 'numero_docentes_envolvidos', label: 'Docentes Envolvidos' }])} />
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                          <SemiCircleChart percentage={data!.docentes.percentual} label="Docente" color="#FFC107" size={200} value={data!.docentes.envolvidos} total={data!.docentes.total} animationActive={!isGeneratingPDF} />
+                          <SemiCircleChart percentage={data!.docentes.percentual} label="Docente" color="#FFC107" size={300} value={data!.docentes.envolvidos} total={data!.docentes.total} animationActive={!isGeneratingPDF} />
                         </div>
                         <div className="expand-icon-container" onClick={() => openModal(
                           <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -1002,7 +1015,7 @@ const Dashboard: React.FC = () => {
                     )}
                   </div>
                   {/*Coordenadores */}
-                  <div id="chart-docentes-coordenadores" className="bar-chart-container" style={{ margin: 0, flex: 1, height: '250px', position: 'relative' }}>
+                  <div id="chart-docentes-coordenadores" className="bar-chart-container" style={{ margin: 0, flex: 1, minHeight: '320px', height: 'auto', position: 'relative' }}>
                     {isLoading ? (
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', height: '100%' }}>
                         <SkeletonText width="80%" height="24px" />
@@ -1017,7 +1030,7 @@ const Dashboard: React.FC = () => {
                           <ChartActionMenu chartId="chart-docentes-coordenadores" title="Percentual Coordenadores Docentes" onViewDetails={() => fetchDetails("Detalhes: Percentual de Coordenadores Docentes", (item) => item.numero_coordenadores_docentes === 1, [{ key: 'numero_coordenadores_docentes', label: 'Coordenadores Docentes' }])} />
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                          <SemiCircleChart percentage={data!.docentes.percentualCoordenadores} label="Docente" color="#FFC107" size={200} value={data!.docentes.coordenadores} total={data!.docentes.total} animationActive={!isGeneratingPDF} />
+                          <SemiCircleChart percentage={data!.docentes.percentualCoordenadores} label="Docente" color="#FFC107" size={300} value={data!.docentes.coordenadores} total={data!.docentes.total} animationActive={!isGeneratingPDF} />
                         </div>
                         <div className="expand-icon-container" onClick={() => openModal(
                           <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -1049,7 +1062,14 @@ const Dashboard: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      <StatCard value={data!.docentes.ativos} title="Total de Docentes na Universidade" color="#278837" borderColor="#278837" />
+                      <StatCard
+                        value={data!.docentes.ativos}
+                        title="Total de Docentes na Universidade"
+                        color="#278837"
+                        borderColor="#278837"
+                        badge="Em Exercício"
+                        badgeType="active"
+                      />
                       <StatCard value={data!.docentes.envolvidos} title="Docentes envolvidos em ações de extensão" color="#0D3887" borderColor="#0D3887" />
                       <StatCard value={data!.docentes.coordenadores} title="N° de Docentes Coordenadores de Projetos" color="#0D3887" borderColor="#0D3887" />
                     </>
@@ -1081,7 +1101,7 @@ const Dashboard: React.FC = () => {
               <div className="stats-section-vertical">
                 <div style={{ display: 'flex', gap: '30px', width: '100%', marginBottom: '30px' }}>
                   {/*TAe nvolvidos */}
-                  <div id="chart-taes-percentual" className="bar-chart-container" style={{ margin: 0, flex: 1, height: '250px', position: 'relative' }}>
+                  <div id="chart-taes-percentual" className="bar-chart-container" style={{ margin: 0, flex: 1, minHeight: '320px', height: 'auto', position: 'relative' }}>
                     {isLoading ? (
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', height: '100%' }}>
                         <SkeletonText width="80%" height="24px" />
@@ -1096,7 +1116,7 @@ const Dashboard: React.FC = () => {
                           <ChartActionMenu chartId="chart-taes-percentual" title="Percentual TAEs" onViewDetails={() => fetchDetails("Detalhes: Percentual de TAEs", (item) => (item.total_tecnicos_envolvidos || 0) > 0, [{ key: 'total_tecnicos_envolvidos', label: 'TAEs Envolvidos' }])} />
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                          <SemiCircleChart percentage={data!.taes.percentual} label="TAEs" color="#FFC107" size={200} value={data!.taes.envolvidos} total={data!.taes.total} animationActive={!isGeneratingPDF} />
+                          <SemiCircleChart percentage={data!.taes.percentual} label="TAEs" color="#FFC107" size={300} value={data!.taes.envolvidos} total={data!.taes.total} animationActive={!isGeneratingPDF} />
                         </div>
                         <div className="expand-icon-container" onClick={() => openModal(
                           <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -1119,7 +1139,7 @@ const Dashboard: React.FC = () => {
                   </div>
 
                   {/* tAE Coordenadores */}
-                  <div id="chart-taes-coordenadores" className="bar-chart-container" style={{ margin: 0, flex: 1, height: '250px', position: 'relative' }}>
+                  <div id="chart-taes-coordenadores" className="bar-chart-container" style={{ margin: 0, flex: 1, minHeight: '320px', height: 'auto', position: 'relative' }}>
                     {isLoading ? (
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', height: '100%' }}>
                         <SkeletonText width="80%" height="24px" />
@@ -1134,7 +1154,7 @@ const Dashboard: React.FC = () => {
                           <ChartActionMenu chartId="chart-taes-coordenadores" title="Percentual Coordenadores TAEs" onViewDetails={() => fetchDetails("Detalhes: Percentual de Coordenadores TAEs", (item) => item.numero_coordenadores_taes === 1, [{ key: 'numero_coordenadores_taes', label: 'Coordenadores TAEs' }])} />
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                          <SemiCircleChart percentage={data!.taes.percentualCoordenadores} label="TAEs" color="#FFC107" size={200} value={data!.taes.coordenadores} total={data!.taes.total} animationActive={!isGeneratingPDF} />
+                          <SemiCircleChart percentage={data!.taes.percentualCoordenadores} label="TAEs" color="#FFC107" size={300} value={data!.taes.coordenadores} total={data!.taes.total} animationActive={!isGeneratingPDF} />
                         </div>
                         <div className="expand-icon-container" onClick={() => openModal(
                           <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -1167,10 +1187,20 @@ const Dashboard: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      <StatCard value={data!.taes.ativos} title="Total de TAEs na Universidade" color="#278837" borderColor="#278837" />
+
+                      <StatCard
+                        value={data!.taes.ativos} // Verifique se essa variável traz mesmo os TAEs
+                        title="Total de TAEs na Universidade"
+                        color="#278837"       // Verde para indicar "Ativo"
+                        borderColor="#278837"
+                        badge="Em Exercício"  // Padrão para "quem está aqui agora"
+                        badgeType="active"
+                      />
+
                       <StatCard value={data!.taes.envolvidos} title="TAEs envolvidos em ações de extensão" color="#0D3887" borderColor="#0D3887" />
                       <StatCard value={data!.taes.coordenadores} title="N° de TAEs coordenadores" color="#0D3887" borderColor="#0D3887" />
                     </>
+
                   )}
                 </div>
               </div>
