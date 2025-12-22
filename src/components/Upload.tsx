@@ -67,7 +67,9 @@ const Upload: React.FC = () => {
   const [uploadHistory, setUploadHistory] = useState<HistoryItem[]>([]);
   const [lastUpdate, setLastUpdate] = useState<string | null>(null);
   const [expandedInfo, setExpandedInfo] = useState<string | null>(null);
+
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
 
   useEffect(() => {
     // Recupera histórico do localStorage ao carregar a página
@@ -82,22 +84,54 @@ const Upload: React.FC = () => {
     }
   }, []);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = event.target.files;
-    if (!selectedFiles) return;
-
-    const fileList = Array.from(selectedFiles);
-    const invalidFiles = fileList.filter(file => !file.name.endsWith('.csv'));
+  const processFiles = (incomingFiles: File[]) => {
+    const invalidFiles = incomingFiles.filter(file => !file.name.endsWith('.csv'));
 
     if (invalidFiles.length > 0) {
       setMessage({ type: 'error', text: 'Por favor, selecione apenas arquivos CSV.' });
-      setFiles([]);
+      // Reset input if it was a click selection
+      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
       return;
     }
 
-    setFiles(fileList);
+    setFiles(prevFiles => {
+      const existingNames = new Set(prevFiles.map(f => f.name));
+      const uniqueNewFiles = incomingFiles.filter(f => !existingNames.has(f.name));
+      return [...prevFiles, ...uniqueNewFiles];
+    });
+
     setMessage(null);
     setProcessedFiles([]);
+
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = event.target.files;
+    if (!selectedFiles) return;
+    processFiles(Array.from(selectedFiles));
+  };
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      processFiles(Array.from(e.dataTransfer.files));
+    }
   };
 
   const handleCancel = () => {
@@ -107,6 +141,28 @@ const Upload: React.FC = () => {
 
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     if (fileInput) fileInput.value = '';
+  };
+
+  // Função para identificar o tipo de planilha com base no nome do arquivo
+  const getFileType = (fileName: string): { type: string; recognized: boolean } => {
+    const name = fileName.toLowerCase();
+    if (name.includes('16004') || name.includes('projetos'))
+      return { type: 'Projetos', recognized: true };
+    if (name.includes('13284') || name.includes('docentes'))
+      return { type: 'Docentes', recognized: true };
+    if (name.includes('17444') || name.includes('taes'))
+      return { type: 'TAEs', recognized: true };
+    if (name.includes('14955') || name.includes('participantes'))
+      return { type: 'Participantes', recognized: true };
+    if (name.includes('15684') || name.includes('bolsistas'))
+      return { type: 'Bolsistas', recognized: true };
+    if (name.includes('17044') || name.includes('total_alunos') || name.includes('total-alunos'))
+      return { type: 'Total de Alunos', recognized: true };
+    return { type: 'Não reconhecido', recognized: false };
+  };
+
+  const handleRemoveFile = (indexToRemove: number) => {
+    setFiles(prevFiles => prevFiles.filter((_, idx) => idx !== indexToRemove));
   };
 
   const handleUpload = () => {
@@ -270,20 +326,62 @@ const Upload: React.FC = () => {
           </div>
         </div>
 
-        <input
-          type="file"
-          accept=".csv"
-          multiple
-          onChange={handleFileChange}
-        />
+        <div
+          className={`file-drop-area ${dragActive ? 'drag-active' : ''}`}
+          onDragEnter={handleDrag}
+          onDragLeave={handleDrag}
+          onDragOver={handleDrag}
+          onDrop={handleDrop}
+        >
+          <span className="upload-icon">☁️</span>
+          <span className="file-msg">
+            Arraste e solte seus arquivos CSV aqui ou clique para selecionar
+          </span>
+          <input
+            className="file-input"
+            type="file"
+            accept=".csv"
+            multiple
+            onChange={handleFileChange}
+          />
+        </div>
 
         {files.length > 0 && (
           <>
-            <ul className="file-list">
-              {files.map((f, idx) => <li key={idx}>{f.name}</li>)}
-            </ul>
+            <div className="selected-files-header">
+              <span className="files-count">
+                {files.length} arquivo{files.length !== 1 ? 's' : ''} selecionado{files.length !== 1 ? 's' : ''}
+              </span>
+              <span className="files-hint">de 6 planilhas aceitas</span>
+            </div>
+            <div className="file-list-enhanced">
+              {files.map((f, idx) => {
+                const fileInfo = getFileType(f.name);
+                return (
+                  <div key={idx} className={`file-item ${fileInfo.recognized ? 'recognized' : 'unrecognized'}`}>
+                    <div className="file-item-content">
+                      <span className="file-icon">{fileInfo.recognized ? '✓' : '?'}</span>
+                      <div className="file-details">
+                        <span className="file-name">{f.name}</span>
+                        <span className={`file-type-badge ${fileInfo.recognized ? 'badge-success' : 'badge-warning'}`}>
+                          {fileInfo.type}
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      className="file-remove-btn"
+                      onClick={() => handleRemoveFile(idx)}
+                      disabled={isLoading}
+                      title="Remover arquivo"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
             <button className="cancel-button" onClick={handleCancel} disabled={isLoading}>
-              Cancelar Upload
+              Cancelar Todos
             </button>
           </>
         )}

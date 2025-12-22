@@ -30,19 +30,27 @@
 }
 
 .file-drop-area {
-    border: 2px dashed #ddd;
-    border-radius: 8px;
-    padding: 40px 20px;
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 50px 20px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
+    background-color: #fcfcfc;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
 }
 
 .file-drop-area:hover,
 .file-drop-area.drag-active {
     border-color: #4a90e2;
-    background-color: #f0f7ff;
+    background-color: #f0f9ff;
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.1);
+    transform: translateY(-2px);
 }
 
 .file-input {
@@ -56,10 +64,23 @@
 }
 
 .upload-icon {
-    font-size: 48px;
+    font-size: 42px;
     color: #4a90e2;
-    margin-bottom: 15px;
+    margin-bottom: 5px;
     display: block;
+    transition: transform 0.3s ease;
+}
+
+.file-drop-area:hover .upload-icon {
+    transform: scale(1.1);
+}
+
+.file-msg {
+    font-size: 15px;
+    color: #64748b;
+    font-weight: 500;
+    max-width: 80%;
+    line-height: 1.5;
 }
 
 
@@ -105,7 +126,147 @@
     border: 1px solid #f5c6cb;
 }
 
-/* New styles for file list and results */
+.selected-files-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px 0 10px 0;
+    padding: 0 4px;
+}
+
+.files-count {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.files-hint {
+    font-size: 13px;
+    color: #888;
+}
+
+.file-list-enhanced {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 280px;
+    overflow-y: auto;
+    padding: 4px;
+    margin-bottom: 15px;
+}
+
+.file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s ease;
+}
+
+.file-item:hover {
+    background-color: #f0f4f8;
+    border-color: #d0d7de;
+}
+
+.file-item.recognized {
+    border-left: 4px solid #28a745;
+}
+
+.file-item.unrecognized {
+    border-left: 4px solid #ffc107;
+    background-color: #fffbf0;
+}
+
+.file-item-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+.file-icon {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 14px;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.file-item.recognized .file-icon {
+    background-color: #d4edda;
+    color: #28a745;
+}
+
+.file-item.unrecognized .file-icon {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.file-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.file-name {
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-type-badge {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+    width: fit-content;
+}
+
+.badge-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.badge-warning {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.file-remove-btn {
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.file-remove-btn:hover {
+    background-color: #fee;
+    color: #dc3545;
+}
+
+.file-remove-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+
 .file-list {
     list-style: none;
     padding: 0;
@@ -160,7 +321,7 @@
     gap: 8px;
 }
 
-/* Cancel Button */
+/* Cancelar Button */
 .cancel-button {
     background-color: #dc3545;
     color: white;
@@ -199,7 +360,7 @@
     border: 1px solid #bbdefb;
 }
 
-/* Upload History */
+/* Upload Historico */
 .upload-history {
     margin-top: 30px;
     text-align: left;
@@ -242,7 +403,7 @@
     margin-left: 15px;
 }
 
-/* Spreadsheet Info Section */
+
 .spreadsheet-info-section {
     margin-bottom: 30px;
     text-align: left;
