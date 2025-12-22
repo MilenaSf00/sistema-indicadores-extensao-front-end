@@ -144,20 +144,27 @@ const Upload: React.FC = () => {
   };
 
   // Função para identificar o tipo de planilha com base no nome do arquivo
+  // IMPORTANTE: Prioriza código SAP para evitar conflitos (ex: 14955 contém "projetos" no nome)
   const getFileType = (fileName: string): { type: string; recognized: boolean } => {
     const name = fileName.toLowerCase();
-    if (name.includes('16004') || name.includes('projetos'))
-      return { type: 'Projetos', recognized: true };
-    if (name.includes('13284') || name.includes('docentes'))
-      return { type: 'Docentes', recognized: true };
-    if (name.includes('17444') || name.includes('taes'))
-      return { type: 'TAEs', recognized: true };
-    if (name.includes('14955') || name.includes('participantes'))
-      return { type: 'Participantes', recognized: true };
-    if (name.includes('15684') || name.includes('bolsistas'))
-      return { type: 'Bolsistas', recognized: true };
-    if (name.includes('17044') || name.includes('total_alunos') || name.includes('total-alunos'))
+
+    // 1. Priorizar código SAP (mais específico e confiável)
+    if (name.includes('16004')) return { type: 'Projetos', recognized: true };
+    if (name.includes('14955')) return { type: 'Participantes', recognized: true };
+    if (name.includes('13284')) return { type: 'Docentes', recognized: true };
+    if (name.includes('17444')) return { type: 'TAEs', recognized: true };
+    if (name.includes('15684')) return { type: 'Bolsistas', recognized: true };
+    if (name.includes('17044')) return { type: 'Total de Alunos', recognized: true };
+
+    // 2. Fallback: palavras-chave (para arquivos sem código SAP)
+    if (name.includes('participantes')) return { type: 'Participantes', recognized: true };
+    if (name.includes('projetos')) return { type: 'Projetos', recognized: true };
+    if (name.includes('docentes')) return { type: 'Docentes', recognized: true };
+    if (name.includes('taes')) return { type: 'TAEs', recognized: true };
+    if (name.includes('bolsistas')) return { type: 'Bolsistas', recognized: true };
+    if (name.includes('total_alunos') || name.includes('total-alunos'))
       return { type: 'Total de Alunos', recognized: true };
+
     return { type: 'Não reconhecido', recognized: false };
   };
 
@@ -182,16 +189,25 @@ const Upload: React.FC = () => {
         await clearData();
       }
 
-      // Identificar arquivos
+      // Identificar arquivos - prioriza código SAP sobre palavras-chave
       const fileMap: { [key: string]: File } = {};
       files.forEach(file => {
         const name = file.name.toLowerCase();
-        if (name.includes('16004') || name.includes('projetos')) fileMap['projetos'] = file;
-        else if (name.includes('13284') || name.includes('docentes')) fileMap['docentes'] = file;
-        else if (name.includes('17444') || name.includes('taes')) fileMap['taes'] = file;
-        else if (name.includes('14955') || name.includes('participantes')) fileMap['participantes'] = file;
-        else if (name.includes('15684') || name.includes('bolsistas')) fileMap['bolsistas'] = file;
-        else if (name.includes('17044') || name.includes('total_alunos') || name.includes('total-alunos')) fileMap['total_alunos'] = file;
+
+        // Priorizar código SAP (mais específico)
+        if (name.includes('16004')) fileMap['projetos'] = file;
+        else if (name.includes('14955')) fileMap['participantes'] = file;
+        else if (name.includes('13284')) fileMap['docentes'] = file;
+        else if (name.includes('17444')) fileMap['taes'] = file;
+        else if (name.includes('15684')) fileMap['bolsistas'] = file;
+        else if (name.includes('17044')) fileMap['total_alunos'] = file;
+        // Fallback: palavras-chave
+        else if (name.includes('participantes')) fileMap['participantes'] = file;
+        else if (name.includes('projetos')) fileMap['projetos'] = file;
+        else if (name.includes('docentes')) fileMap['docentes'] = file;
+        else if (name.includes('taes')) fileMap['taes'] = file;
+        else if (name.includes('bolsistas')) fileMap['bolsistas'] = file;
+        else if (name.includes('total_alunos') || name.includes('total-alunos')) fileMap['total_alunos'] = file;
       });
 
       const uploadedFilesList: string[] = [];
