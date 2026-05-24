@@ -138,14 +138,14 @@ const Modal = ({ content, onClose }: { content: React.ReactNode, onClose: () => 
         onClick={e => e.stopPropagation()}
         style={{
           backgroundColor: 'white',
-          padding: '50px 20px 20px 20px', // Increased top padding for close button
+          padding: '50px 20px 20px 20px',
           borderRadius: '8px',
-          width: '95%',         // ocupa 95% da tela
-          maxWidth: '1200px',   // largura máxima aumentada
-          height: '90%',        // altura da modal
-          maxHeight: '90vh',    // altura máxima da viewport
-          overflowY: 'auto',    // rolagem vertical se necessário
-          overflowX: 'auto',    // rolagem horizontal se necessário
+          width: '95%',
+          maxWidth: '1200px',
+          height: '90%',
+          maxHeight: '90vh',
+          overflowY: 'auto',
+          overflowX: 'auto',
           position: 'relative',
           display: 'flex',
           flexDirection: 'column',
@@ -412,7 +412,7 @@ const Dashboard: React.FC = () => {
     setCurrentDetailsTitle(title);
     setIsDetailsModalOpen(true);
     try {
-      // Show skeleton loading state
+
       openModal(
         <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', padding: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>

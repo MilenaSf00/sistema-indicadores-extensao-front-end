@@ -21,7 +21,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ filters, onFilterChange, 
     if (!currentValues.includes(value)) {
       onFilterChange({ ...filters, [id]: [...currentValues, value] });
     }
-    // Reset select to placeholder
+
     e.target.value = "";
   };
 

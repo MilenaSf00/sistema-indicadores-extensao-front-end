@@ -59,7 +59,7 @@ export const CustomBarChart: React.FC<CustomBarChartProps & { animationActive?: 
 // -----------------------
 interface CustomPieChartProps {
     data: ChartData[];
-    size?: number; // tamanho máximo do gráfico
+    size?: number;
 }
 
 export const CustomPieChart: React.FC<CustomPieChartProps & { animationActive?: boolean }> = ({ data, size = 300, animationActive = true }) => {
@@ -89,9 +89,6 @@ export const CustomPieChart: React.FC<CustomPieChartProps & { animationActive?: 
     );
 };
 
-// -----------------------
-// SemiCircleChart
-// -----------------------
 // -----------------------
 // SemiCircleChart
 // -----------------------
@@ -185,7 +182,7 @@ export const SemiCircleChart: React.FC<SemiCircleChartProps & { animationActive?
                 </ResponsiveContainer>
             </div>
 
-            {/* Value and Label */}
+
             <div style={{
                 textAlign: 'center',
                 marginTop: '-10px'
@@ -210,7 +207,7 @@ export const SemiCircleChart: React.FC<SemiCircleChartProps & { animationActive?
                 </div>
             </div>
 
-            {/* Legend */}
+
             {showLegend && (
                 <div style={{
                     display: 'flex',
@@ -248,7 +245,7 @@ export const SemiCircleChart: React.FC<SemiCircleChartProps & { animationActive?
                 </div>
             )}
 
-            {/* Simple Value Text (if no legend) */}
+
             {!showLegend && value !== undefined && total !== undefined && (
                 <div style={{
                     fontSize: '12px',

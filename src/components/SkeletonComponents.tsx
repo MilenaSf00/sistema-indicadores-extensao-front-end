@@ -1,13 +1,13 @@
 import React from 'react';
 
-// Skeleton base styles
+
 const skeletonBaseStyle: React.CSSProperties = {
     backgroundColor: '#e0e0e0',
     borderRadius: '4px',
     animation: 'pulse 1.5s ease-in-out infinite',
 };
 
-// Keyframes need to be added via CSS, but we'll use inline animation
+
 const pulseAnimation = `
 @keyframes pulse {
     0%, 100% { opacity: 1; }
@@ -15,16 +15,14 @@ const pulseAnimation = `
 }
 `;
 
-// Inject keyframes into document head
+
 if (typeof document !== 'undefined') {
     const styleSheet = document.createElement('style');
     styleSheet.textContent = pulseAnimation;
     document.head.appendChild(styleSheet);
 }
 
-// -----------------------
-// SkeletonText
-// -----------------------
+
 interface SkeletonTextProps {
     width?: string;
     height?: string;
@@ -42,9 +40,7 @@ export const SkeletonText: React.FC<SkeletonTextProps> = ({ width = '100%', heig
     );
 };
 
-// -----------------------
-// SkeletonCard
-// -----------------------
+
 interface SkeletonCardProps {
     minHeight?: string;
 }
@@ -64,9 +60,7 @@ export const SkeletonCard: React.FC<SkeletonCardProps> = ({ minHeight = '140px' 
     );
 };
 
-// -----------------------
-// SkeletonBarChart
-// -----------------------
+
 export const SkeletonBarChart: React.FC = () => {
     return (
         <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', gap: '15px', padding: '20px' }}>
@@ -88,9 +82,7 @@ export const SkeletonBarChart: React.FC = () => {
     );
 };
 
-// -----------------------
-// SkeletonCircleChart
-// -----------------------
+
 interface SkeletonCircleChartProps {
     size?: number;
     isDonut?: boolean;
@@ -125,9 +117,7 @@ export const SkeletonCircleChart: React.FC<SkeletonCircleChartProps> = ({ size =
     );
 };
 
-// -----------------------
-// SkeletonSemiCircle
-// -----------------------
+
 interface SkeletonSemiCircleProps {
     size?: number;
 }

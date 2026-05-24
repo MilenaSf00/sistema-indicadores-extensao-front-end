@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { ReactNode } from 'react';
 
-import '../css/Sobre.css'; // Utilizing styles from Sobre.css as per plan
+import '../css/Sobre.css';
 
 interface TooltipProps {
     text: string;
