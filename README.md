@@ -13,9 +13,7 @@
 
 ## 📝 Descrição do Projeto
 
-O **Indicadores de Extensão** é uma aplicação web desenvolvida para a **visualização e análise de indicadores de projetos de extensão universitária**. A plataforma oferece uma interface moderna e intuitiva que permite a gestão, o acompanhamento e a apresentação de dados relacionados às atividades extensionistas da universidade.
-
-Por meio de dashboards interativos com gráficos dinâmicos, a aplicação possibilita que coordenadores, gestores e demais envolvidos acompanhem métricas-chave dos projetos de extensão — como participação, alcance, evolução temporal e demais indicadores relevantes. Os dados são importados via upload de arquivos CSV e consumidos a partir de uma API REST no backend.
+O **Indicadores de Extensão** é uma aplicação web desenvolvida para a **visualização e análise de indicadores de projetos de extensão universitária**. 
 
 ### ✨ Principais funcionalidades
 
