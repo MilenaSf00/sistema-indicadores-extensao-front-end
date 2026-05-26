@@ -168,14 +168,3 @@ indicadores-extensao-front/
 
 ---
 
-## Resumo Rápido — Onde colocar cada coisa?
-
-| Preciso criar... | Coloque em... |
-| :--- | :--- |
-| Uma nova página ou componente visual | `/src/components/NomeComponente.tsx` |
-| O estilo CSS correspondente | `/src/css/NomeComponente.css` |
-| Uma nova chamada para API do backend | `/src/services/api.ts` (ou novo arquivo `.ts`) |
-| Um estado global compartilhado (Context) | `/src/contexts/NomeContext.tsx` |
-| Uma imagem/logo usada em componentes | `/src/assets/` |
-| Um favicon ou arquivo estático público | `/public/` |
-| Um tipo TypeScript reutilizável | `/src/types.ts` |
