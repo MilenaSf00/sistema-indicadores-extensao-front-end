@@ -342,11 +342,15 @@ Para configurar o deploy do projeto em uma nova conta ou projeto da Vercel, siga
 
 ### ⚠️ Pontos importantes antes de fazer o deploy
 
-> ⚠️ **CAUTION:** Para que a aplicação fique pública e acessível, você precisa hospedar **ambos os repositórios** (front-end e back-end) em uma plataforma de deploy. São **projetos separados** dentro da plataforma (Vercel ou outra).
+
+ Pontos importantes antes de fazer o deploy
+
+> ⚠️ **CAUTION:** Para que a aplicação fique pública e acessível, você precisa hospedar ambos os repositórios (front-end e back-end) em uma plataforma de deploy.
+
 
 Ao configurar o deploy do front-end, leve em consideração:
 
-**1. Variáveis de ambiente na Vercel:**
+**Variáveis de ambiente na Vercel:**
 
 Para que o front-end consiga se comunicar com a API do back-end em produção, é obrigatório configurar a variável `VITE_API_URL` no painel da Vercel (ou da plataforma escolhida), apontando para a URL pública do deploy do back-end.
 
@@ -356,24 +360,14 @@ Para que o front-end consiga se comunicar com a API do back-end em produção, �
 
 No painel da Vercel, acesse: **Settings → Environment Variables** e adicione a variável acima.
 
-**2. Build settings (configurações de build):**
 
-A Vercel geralmente detecta automaticamente projetos Vite, mas, caso necessário, configure:
-
-| Configuração | Valor |
-|---|---|
-| Framework Preset | Vite |
-| Build Command | `npm run build` |
-| Output Directory | `dist` |
-| Install Command | `npm install` |
-
-**3. Projetos separados:**
+**Projetos separados:**
 
 O front-end e o back-end são deployados como **projetos independentes** na Vercel (ou na plataforma escolhida). Cada um tem seu próprio domínio/URL, variáveis de ambiente e configurações de build. A comunicação entre eles é feita via HTTP (API REST), utilizando a variável `VITE_API_URL`.
 
 ---
 
-## 🤝 Boas Práticas de Contribuição
+## 🤝 Boas Práticas 
 
 ### Padrão de Nomenclatura de Branches
 
@@ -405,7 +399,6 @@ git commit -m "feat: adiciona nova funcionalidade X"
 # 4. Envie a branch para o repositório remoto
 git push origin feature/nova-funcionalidade
 
-# 5. Abra um Pull Request no GitHub
 ```
 
 ---
